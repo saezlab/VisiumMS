@@ -28,8 +28,11 @@ total_n_rem = np.zeros(5)
 
 # Run QC plots for each sample and store summary
 for sample in os.listdir(input_path):
+    path = os.path.join(input_path, sample)
+    if not os.path.isdir(path) or sample.startswith('.'):
+        continue
     print(sample)
-    plot_data = pickle.load(open(os.path.join(input_path, sample, sample+'.pkl'), "rb"))
+    plot_data = pickle.load(open(os.path.join(path, sample+'.pkl'), "rb"))
 
     # Filter params
     mt_thr = plot_data['mt_thr']

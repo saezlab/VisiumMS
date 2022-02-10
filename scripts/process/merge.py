@@ -29,8 +29,9 @@ samples = np.unique(meta['sample_id'])
 
 adata = []
 for sample in os.listdir(input_path):
-    if not os.path.isdir(os.path.join(input_path, sample)):
+    if not os.path.isdir(os.path.join(input_path, sample)) or sample.startswith('.'):
         continue
+    print(sample)
     
     # Read adata
     tmp = sc.read_h5ad(os.path.join(input_path, sample, sample+'.h5ad'))

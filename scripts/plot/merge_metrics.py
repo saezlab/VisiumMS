@@ -9,16 +9,18 @@ import argparse
 import os
 
 """
-Script to plot different QC metrics after filtering the data.
+Script to plot different QC metrics after merging the data.
 """
 
 # Read command line and set args
-parser = argparse.ArgumentParser(prog='qc', description='Run QC per sample')
+parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--input_path', help='Input path to merged object', required=True)
-parser.add_argument('-o', '--output_dir', help='Output directory where to store the figures', required=True)
+parser.add_argument('-v', '--version', help='Version of the merging', required=False)
+parser.add_argument('-o', '--output_dir', help='Output directory', required=True)
 args = vars(parser.parse_args())
 
 input_path = args['input_path']
+version = args['version']
 output_path = args['output_dir']
 ###############################
 
@@ -54,4 +56,8 @@ sc.pl.violin(adata, 'n_genes_by_counts', ax=ax, rotation=45,
              groupby='sample_id', stripplot=False, show=False, order=lst_samples)
 
 # Save
-fig.savefig(os.path.join(output_path, 'merged_summary.png'))
+if version is not None:
+    fname = 'merged_summary_{0}.png'.format(version)
+else:
+    fname = 'merged_summary.png'
+fig.savefig(os.path.join(output_path, fname))

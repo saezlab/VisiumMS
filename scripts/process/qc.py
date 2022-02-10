@@ -42,6 +42,8 @@ doublet_thresholds = {
 
 # Perform QC for each sample independently
 for sample in os.listdir(base_path):
+    if sample.startswith('.'):
+        continue
     print(sample)
     # Read raw data
     adata = sc.read_10x_mtx(os.path.join(base_path, sample, 'filtered_feature_bc_matrix'),

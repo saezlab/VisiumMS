@@ -23,10 +23,6 @@ output_path = args['output_dir']
 # Read merged object
 adata = sc.read_h5ad(input_path)
 
-# Run PCA
-sc.pp.scale(adata)
-sc.tl.pca(adata, svd_solver='arpack')
-
 # Run harmony
 sce.pp.harmony_integrate(adata, 'batch', adjusted_basis='X_pca', max_iter_harmony=30)
 sc.pp.neighbors(adata)

@@ -1,3 +1,4 @@
+echo '## Annotating cell types ##'
 # Draft annotation
 python scripts/process/annotate.py -i data/prc/sc/integrated.h5ad -r 0.5 -o data/prc/sc/
 python scripts/plot/annotate_metrics.py -i data/prc/sc/annotated.h5ad -m data/markers.csv -o figures

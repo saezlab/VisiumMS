@@ -4,7 +4,7 @@ python scripts/process/annotate.py -i data/prc/sc/integrated.h5ad -r 0.5 -o data
 python scripts/plot/annotate_metrics.py -i data/prc/sc/annotated.h5ad -m data/markers.csv -o figures
 
 # Remove neurons and doublet clusters
-python scripts/process/remerge.py -i data/prc/sc/annotated.h5ad -c 7,8,10,11,14,17,18,19 -o data/prc/sc/
+python scripts/process/remerge.py -i data/prc/sc/annotated.h5ad -c 7,10,12,13,14,18,20,21 -o data/prc/sc/
 python scripts/plot/merge_metrics.py -i data/prc/sc/annotated.h5ad -v 1 -o figures/
 
 python scripts/process/reintegrate.py -i data/prc/sc/annotated.h5ad -o data/prc/sc/

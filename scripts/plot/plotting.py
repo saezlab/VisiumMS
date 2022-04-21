@@ -3,7 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn as sns
-from matplotlib import cm
+from matplotlib import cm 
+from scipy.interpolate import interpn
 
 '''Plotting functions'''
 
@@ -27,9 +28,19 @@ ctype_colors = {
     'vSMCs' : '#89C75F'
 }
 
-def plot_mt_vs_counts(data, ax, mt_thr=0.5, fontsize=11):    
+def density_scatter(x, y, ax, bins=30, **kwargs):
+    data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
+    z = interpn((0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1])), data, np.vstack([x,y]).T, method="splinef2d", bounds_error=False)
+    z[np.where(np.isnan(z))] = 0.0
+    idx = z.argsort()
+    x, y, z = x[idx], y[idx], z[idx]
+    ax.scatter(x, y, c=z, **kwargs)
+    return ax
+
+
+def plot_mt_vs_counts(data, ax, mt_thr=0.5, fontsize=11):
     # Plot scatter
-    ax.scatter(x=data.total_counts, y=data.pct_counts_mt, s=1, c='gray')
+    ax = density_scatter(x=data.total_counts, y=data.pct_counts_mt, ax=ax, s=1)
     ax.axhline(y=mt_thr, linestyle='--', color="black")
     ax.set_xlabel("Total counts", fontsize=fontsize)
     ax.set_ylabel("Fraction MT counts", fontsize=fontsize)

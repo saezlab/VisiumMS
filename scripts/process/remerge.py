@@ -24,14 +24,15 @@ output_path = args['output_dir']
 
 # Read merged object
 adata = sc.read_h5ad(input_path).raw.to_adata()
+adata.uns['log1p'] = {'base': None} # Fix anndata bug https://github.com/scverse/scanpy/issues/2181
 
 # Delete clusters
 for clust in clusters:
-    adata = adata[adata.obs['leiden']!=clust]
+    adata = adata[adata.obs['leiden'] != clust]
 
 # Compute HVG
 sc.pp.highly_variable_genes(adata, batch_key='batch')
-adata.var = adata.var[['highly_variable','highly_variable_nbatches']]
+adata.var = adata.var[['highly_variable', 'highly_variable_nbatches']]
 adata.raw = adata
 
 # Filter by HVG

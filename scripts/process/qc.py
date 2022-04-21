@@ -72,7 +72,7 @@ for sample in os.listdir(base_path):
         adata.obs['diss_score'] = 0
 
     # Set filter values (can be changed)
-    mt_thr = 10.0
+    mt_thr = 5.0
     gene_qnt = 0.99
     diss_qnt = 0.99
 

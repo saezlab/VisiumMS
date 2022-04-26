@@ -29,6 +29,7 @@ ctype_colors = {
 }
 
 def density_scatter(x, y, ax, bins=30, **kwargs):
+    x, y = x.astype(np.float32), y.astype(np.float32)
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn((0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1])), data, np.vstack([x,y]).T, method="splinef2d", bounds_error=False)
     z[np.where(np.isnan(z))] = 0.0
@@ -40,7 +41,7 @@ def density_scatter(x, y, ax, bins=30, **kwargs):
 
 def plot_mt_vs_counts(data, ax, mt_thr=0.5, fontsize=11):
     # Plot scatter
-    ax = density_scatter(x=data.total_counts, y=data.pct_counts_mt, ax=ax, s=1)
+    ax = density_scatter(x=data.total_counts.values, y=data.pct_counts_mt.values, ax=ax, s=1)
     ax.axhline(y=mt_thr, linestyle='--', color="black")
     ax.set_xlabel("Total counts", fontsize=fontsize)
     ax.set_ylabel("Fraction MT counts", fontsize=fontsize)
@@ -48,7 +49,7 @@ def plot_mt_vs_counts(data, ax, mt_thr=0.5, fontsize=11):
 
 def plot_ngenes_vs_counts(data, ax, gene_thr=6000, fontsize=11):
     # Plot scatter
-    ax.scatter(x=data.total_counts, y=data.n_genes_by_counts, s=1, c='gray')
+    ax = density_scatter(x=data.total_counts.values, y=data.n_genes_by_counts.values, ax=ax, s=1)
     ax.axhline(y=gene_thr, linestyle='--', color="black")
     ax.set_xlabel("Total counts", fontsize=fontsize)
     ax.set_ylabel("Number of genes expr", fontsize=fontsize)

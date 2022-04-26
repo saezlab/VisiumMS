@@ -94,7 +94,7 @@ for sample in os.listdir(input_path):
     fig.savefig(os.path.join(output_path, 'qc_'+sample+'.png'))
 
     # Append
-    total_df = total_df.append(df, ignore_index=True)
+    total_df = pd.concat([total_df, df], ignore_index=True)
     summary_df.append([sample, len(msk), sum(msk)])
         
 # Summary plots

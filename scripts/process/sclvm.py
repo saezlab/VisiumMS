@@ -13,7 +13,7 @@ parser.add_argument('-r', '--path_raw', help='Path to raw single nuclei adata', 
 parser.add_argument('-s', '--path_slides', help='Path to raw visium slides', required=True)
 parser.add_argument('-n', '--label_name', help='Label of cell type from raw data', required=True)
 parser.add_argument('-d', '--sample_id', help='Label of sample id from raw data', required=True)
-parser.add_argument('-h', '--n_hvg', help='Number of variable genes to use', required=False, default=2000)
+parser.add_argument('-g', '--n_hvg', help='Number of variable genes to use', required=False, default=2000)
 parser.add_argument('-o', '--path_output', help='Path were to save model', required=True)
 args = vars(parser.parse_args())
 
@@ -22,7 +22,7 @@ path_slides = args['path_slides']
 label_name = args['label_name']
 sample_id = args['sample_id']
 path_output = args['path_output']
-n_hvg = args['n_hvg']
+n_hvg = int(args['n_hvg'])
 
 # Read raw data
 adata = sc.read_h5ad(path_raw)
@@ -68,5 +68,6 @@ model.view_anndata_setup()
 model.train()
 
 # Save model
-model.save(os.path.join(path_output, 'sclvm.pt'), overwrite=True)
-model.history["elbo_train"].to_csv(os.path.join(path_output, 'sclvm_history.csv'))
+model.save(os.path.join(path_output, 'sclvm'), overwrite=True, save_anndata=True)
+model.history["elbo_train"].to_csv(os.path.join(path_output, 'sclvm', 'history.csv'))
+

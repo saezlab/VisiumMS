@@ -30,6 +30,9 @@ adata = sc.read_h5ad(path_raw)
 # Filter empty genes
 sc.pp.filter_genes(adata, min_counts=10)
 
+# Remove MT genes
+adata = adata[:, [g for g in adata.var_names if not g.startswith('MT-')]]
+
 # Store raw expression in layer
 adata.layers["counts"] = adata.X.copy()
 

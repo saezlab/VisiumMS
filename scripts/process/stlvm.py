@@ -16,7 +16,7 @@ args = vars(parser.parse_args())
 
 model_path = args['model_path']
 sample_path = args['sample_path']
-sample_id = os.path.basename(sample_path)
+sample_id = os.path.split(sample_path)[-1]
 output_path = args['output_path']
 
 # Load sclvm model
@@ -43,6 +43,7 @@ st_model.view_anndata_setup()
 st_model.train(max_epochs=2500)
 
 # Save model
+os.makedirs(os.path.join(output_path, sample_id), exist_ok=True)
 st_model.save(os.path.join(output_path, sample_id), overwrite=True, save_anndata=True)
 st_model.history["elbo_train"].to_csv(os.path.join(output_path, sample_id, 'history.csv'))
 

@@ -13,7 +13,7 @@ parser.add_argument('-r', '--path_raw', help='Path to raw single nuclei adata', 
 parser.add_argument('-s', '--path_slides', help='Path to raw visium slides', required=True)
 parser.add_argument('-n', '--label_name', help='Label of cell type from raw data', required=True)
 parser.add_argument('-d', '--sample_id', help='Label of sample id from raw data', required=True)
-parser.add_argument('-g', '--n_hvg', help='Number of variable genes to use', required=False, default=2000)
+parser.add_argument('-g', '--n_genes', help='Number of genes to get from DEG per cluster as universe', required=False, default=4096)
 parser.add_argument('-o', '--path_output', help='Path were to save model', required=True)
 args = vars(parser.parse_args())
 
@@ -22,10 +22,18 @@ path_slides = args['path_slides']
 label_name = args['label_name']
 sample_id = args['sample_id']
 path_output = args['path_output']
-n_hvg = int(args['n_hvg'])
+n_genes = int(args['n_genes'])
 
 # Read raw data
 adata = sc.read_h5ad(path_raw)
+
+# Merge clusters
+ann_dict = {
+    'Astros_c' : 'Astros',
+    'Astros_r' : 'Astros',
+    'Macrophages_f' : 'Microglia',
+}
+adata.obs[label_name] = [ann_dict[l] if l in ann_dict else l for l in adata.obs[label_name]]
 
 # Filter empty genes
 sc.pp.filter_genes(adata, min_counts=10)
@@ -36,14 +44,14 @@ adata = adata[:, [g for g in adata.var_names if not g.startswith('MT-')]]
 # Store raw expression in layer
 adata.layers["counts"] = adata.X.copy()
 
-# Filter HVG genes
+# Filter marker genes
 sc.pp.normalize_total(adata)
 sc.pp.log1p(adata)
+adata.raw = adata
 sc.pp.highly_variable_genes(adata, batch_key=sample_id)
 adata.var = adata.var[['highly_variable','highly_variable_nbatches']]
-adata.raw = adata
 batch_msk = np.array(adata.var.highly_variable_nbatches > 1)
-hvg = adata.var[batch_msk].sort_values('highly_variable_nbatches').tail(n_hvg).index
+hvg = adata.var[batch_msk].sort_values('highly_variable_nbatches').tail(n_genes).index
 adata.var['highly_variable'] = [g in hvg for g in adata.var.index]
 adata.var = adata.var[['highly_variable','highly_variable_nbatches']]
 adata = adata[:,hvg]

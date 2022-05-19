@@ -20,15 +20,15 @@ st_model = DestVI.load(slide_path)
 st_model.adata.obsm["proportions"] = st_model.get_proportions()
 
 # Compute optimal props thresholds
-thrs = destvi_utils.automatic_proportion_threshold(st_model.adata, kind_threshold='secondary', output_file=os.path.join(slide_path, 'thr.html'))
+#thrs = destvi_utils.automatic_proportion_threshold(st_model.adata, kind_threshold='secondary', output_file=os.path.join(slide_path, 'thr.html'))
 
 # Filter and recalculate props
-st_model.adata.obsm["f_proportions"] = st_model.adata.obsm["proportions"].copy()
-for cell_type in thrs.keys():
-    thr = thrs[cell_type]
-    vals = st_model.adata.obsm["f_proportions"][cell_type]
-    st_model.adata.obsm["f_proportions"][cell_type] = vals * (vals > thr)
-st_model.adata.obsm["f_proportions"] = st_model.adata.obsm["f_proportions"] / st_model.adata.obsm["f_proportions"].sum(1).values.reshape(-1,1)
+#st_model.adata.obsm["f_proportions"] = st_model.adata.obsm["proportions"].copy()
+#for cell_type in thrs.keys():
+#    thr = thrs[cell_type]
+#    vals = st_model.adata.obsm["f_proportions"][cell_type]
+#    st_model.adata.obsm["f_proportions"][cell_type] = vals * (vals > thr)
+#st_model.adata.obsm["f_proportions"] = st_model.adata.obsm["f_proportions"] / st_model.adata.obsm["f_proportions"].sum(1).values.reshape(-1,1)
 
 # Save
 st_model.adata.write(os.path.join(slide_path, 'adata.h5ad'))

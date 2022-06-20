@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 from numpy.random import default_rng
 import os
+import matplotlib.pyplot as plt
 
 # this line forces theano to use the GPU and should go before importing cell2location
 os.environ["THEANO_FLAGS"] = 'device=cuda0,floatX=float32,force_device=True'
@@ -48,23 +49,23 @@ adata_raw = adata_raw[~adata_raw.obs[label_name].isna(), :]
 Estimating expression signatures
 """
 # Subsample cells from atlas for fast performance
-rng = default_rng(seed=420)
-
-t_cell_ids = []
-
+#rng = default_rng(seed=420)
+#
+#t_cell_ids = []
+#
 # Iterate each cell type
-for cell_type in adata_raw.obs[label_name].unique():
-    
-    # Select cells from a cell type
-    msk = adata_raw.obs[label_name] == cell_type
-    cell_ids = adata_raw.obs.index[msk]
-    
-    n_cells = int(np.ceil(perc_cells * len(cell_ids)))
-    
-    cell_ids = rng.choice(cell_ids, size=n_cells, replace=False)
-    t_cell_ids.extend(cell_ids)
-    
-adata_raw = adata_raw[t_cell_ids]
+#for cell_type in adata_raw.obs[label_name].unique():
+#    
+#    # Select cells from a cell type
+#    msk = adata_raw.obs[label_name] == cell_type
+#    cell_ids = adata_raw.obs.index[msk]
+#    
+#    n_cells = int(np.ceil(perc_cells * len(cell_ids)))
+#    
+#    cell_ids = rng.choice(cell_ids, size=n_cells, replace=False)
+#    t_cell_ids.extend(cell_ids)
+#    
+#adata_raw = adata_raw[t_cell_ids]
 
 
 """
@@ -83,7 +84,7 @@ adata_raw = adata_raw[:, selected].copy()
 Prepare anndata for the regression model 
 """
 
-RegressionModel.setup_anndata(adata=adata_raw,
+cell2location.models.RegressionModel.setup_anndata(adata=adata_raw,
                               # 10X reaction / sample / batch
                               batch_key=sample_id,
                               # cell type, covariate used for constructing signatures
@@ -92,10 +93,16 @@ RegressionModel.setup_anndata(adata=adata_raw,
 
 # Run regression model
 mod = RegressionModel(adata_raw)
+mod.view_anndata_setup()
 
 # Training 
 mod.train(max_epochs=250, batch_size=2500, train_size=1, lr=0.002, use_gpu=True)
 
+# Save training plot
+os.makedirs(os.path.join(path_output, 'reg_model'), exist_ok=True)
+#fig, ax = plt.subplots(1,1, facecolor='white')
+#mod.plot_history(20, ax=fig)
+#fig.savefig(os.path.join(path_output, 'reg_model', 'history.png'))
 
 # In this section, we export the estimated cell abundance (summary of the posterior distribution).
 adata_raw = mod.export_posterior(
@@ -111,7 +118,4 @@ else:
                                     for i in adata_raw.uns['mod']['factor_names']]].copy()
 inf_aver.columns = adata_raw.uns['mod']['factor_names']
 
-inf_aver.to_csv(os.path.join(path_output,'inf_aver.csv'))
-
-# Plot results
-
+inf_aver.to_csv(os.path.join(path_output, 'reg_model', 'inf_aver.csv'))

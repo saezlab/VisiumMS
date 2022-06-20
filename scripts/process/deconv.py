@@ -36,8 +36,8 @@ d_alpha = int(args['d_alpha'])
 path_output = args['path_output']
 
 # Read inputs
-adata_vis = sc.read_h5ad(slide_path)
-inf_aver = pd.read_csv(reg_path)
+adata_vis = sc.read_visium(slide_path)
+inf_aver = pd.read_csv(reg_path, index_col=0)
 
 # find shared genes and subset both anndata and reference signatures
 intersect = np.intersect1d(adata_vis.var_names, inf_aver.index)
@@ -52,10 +52,10 @@ mod = cell2location.models.Cell2location(
     adata_vis, cell_state_df=inf_aver,
     # the expected average cell abundance: tissue-dependent
     # hyper-prior which can be estimated from paired histology:
-    N_cells_per_location=30,
+    N_cells_per_location=n_cells_spot,
     # hyperparameter controlling normalisation of
     # within-experiment variation in RNA detection:
-    detection_alpha=20
+    detection_alpha=d_alpha
 )
 mod.view_anndata_setup()
 

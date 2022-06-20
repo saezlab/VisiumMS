@@ -37,6 +37,7 @@ path_output = args['path_output']
 
 # Read inputs
 adata_vis = sc.read_visium(slide_path)
+adata_vis.var_names_make_unique()
 inf_aver = pd.read_csv(reg_path, index_col=0)
 
 # find shared genes and subset both anndata and reference signatures
@@ -45,7 +46,7 @@ adata_vis = adata_vis[:, intersect].copy()
 inf_aver = inf_aver.loc[intersect, :].copy()
 
 # prepare anndata for cell2location model
-cell2location.models.Cell2location.setup_anndata(adata=adata_vis, batch_key="sample")
+cell2location.models.Cell2location.setup_anndata(adata=adata_vis)
 
 # create and train the model
 mod = cell2location.models.Cell2location(
@@ -73,6 +74,15 @@ adata_vis = mod.export_posterior(
     adata_vis, sample_kwargs={'num_samples': 1000, 'batch_size': mod.adata.n_obs, 'use_gpu': True}
 )
 
+# Extract abundances df and rename cols to cell types
+cell_abunds = adata_vis.obsm['q05_cell_abundance_w_sf'].copy()
+cell_abunds.columns = adata_vis.uns['mod']['factor_names']
 
+# Compute proportions
+cell_props = cell_abunds / np.sum(cell_abunds, axis=1).values.reshape(-1, 1)
 
+# Store results
+os.makedirs(os.path.join(path_output), exist_ok=True)
+cell_abunds.to_csv(os.path.join(path_output, 'cell_abunds.csv'))
+cell_props.to_csv(os.path.join(path_output, 'cell_props.csv'))
 

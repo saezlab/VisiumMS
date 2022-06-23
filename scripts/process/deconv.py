@@ -24,8 +24,8 @@ import argparse
 parser = argparse.ArgumentParser(prog='qc', description='Generates regression model from raw single nuc data')
 parser.add_argument('-s', '--slide_path', help='Path to slide adata', required=True)
 parser.add_argument('-r', '--reg_path', help='Path to regression model', required=True)
-parser.add_argument('-n', '--n_cells_spot', help='Number of cells per spot', required=False, type=float, default=30)
-parser.add_argument('-a', '--d_apha', help='Regularization parammeter for technical effects', required=False, type=float, default=20)
+parser.add_argument('-n', '--n_cells_spot', help='Number of cells per spot', required=False, type=float, default=5)
+parser.add_argument('-a', '--d_alpha', help='Regularization parammeter for technical effects', required=False, type=float, default=20)
 parser.add_argument('-o', '--path_output', help='Path were to save deconvolution', required=True)
 args = vars(parser.parse_args())
 
@@ -36,7 +36,7 @@ d_alpha = int(args['d_alpha'])
 path_output = args['path_output']
 
 # Read inputs
-adata_vis = sc.read_visium(slide_path)
+adata_vis = sc.read_visium(os.path.join(slide_path, 'outs'))
 adata_vis.var_names_make_unique()
 inf_aver = pd.read_csv(reg_path, index_col=0)
 

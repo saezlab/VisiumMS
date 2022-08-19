@@ -54,7 +54,6 @@ dependencies:
     - cftime==1.6.0
     - charset-normalizer==2.0.12
     - chex==0.1.3
-    - cmap2d==0.0.1.dev0
     - colorama==0.4.4
     - colorlog==6.6.0
     - commonmark==0.9.1
@@ -64,7 +63,6 @@ dependencies:
     - decorator==5.1.1
     - defusedxml==0.7.1
     - descartes==1.1.0
-    - destvi-utils==0.1.0
     - dill==0.3.4
     - dm-tree==0.1.7
     - docrep==0.3.2
@@ -89,7 +87,6 @@ dependencies:
     - gseapy==0.10.2
     - h5py==3.6.0
     - harmonypy==0.0.5
-    - hotspot==1.0.0
     - idna==3.3
     - igraph==0.9.10
     - imageio==2.17.0

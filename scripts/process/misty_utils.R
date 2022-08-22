@@ -178,9 +178,8 @@ build_misty_pipeline <- function(view.data,
     unlist(all.views, recursive = FALSE)
   )
   
-  
   # Run MISTy
-  run_misty(pline.views, out.alias, cached = FALSE, bypass.intra = bypass.intra)
+  mistyR::run_misty(pline.views, out.alias, cache = FALSE, bypass.intra=bypass.intra)
 }
 
 # Optimizer

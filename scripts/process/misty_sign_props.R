@@ -18,7 +18,7 @@ read_slide <- function(sample_id){
     # Load data
     slide <- Load10X_Spatial(slide_path)
     slide$sample_id <- sample_id
-    props <- t(read.csv(props_path, row.names=1))
+    props <- t(compositions::clr(compositions::clo(read.csv(props_path, row.names=1))))
     abnds <- t(read.csv(abnds_path, row.names=1))
     sign_pos <- t(read.csv(sign_pos_path, row.names=1))
     sign_neg <- t(read.csv(sign_neg_path, row.names=1))
@@ -37,7 +37,7 @@ read_slide <- function(sample_id){
     # Create assays
     slide[["props"]] <- CreateAssayObject(counts = props)
     slide[["abnds"]] <- CreateAssayObject(counts = abnds)
-    DefaultAssay(object = slide) <- "abnds"
+    DefaultAssay(object = slide) <- "props"
     slide[['Spatial']] <- NULL
     for (sign in rownames(sign_pos)){
         tmp <- sign_pos[sign,, drop=F]
@@ -66,9 +66,9 @@ run_misty_sign <- function(slide, sign){
     
     # Define assay of each view ---------------
     view_assays <- list("main" = sign,
-                        "int" = 'abnds',
-                        "jux" = 'abnds',
-                        "pra" = 'abnds'
+                        "int" = 'props',
+                        "jux" = 'props',
+                        "pra" = 'props'
                        )
     # Define features of each view ------------
     view_features <- list("main" = NULL,
@@ -107,7 +107,7 @@ run_misty_sign <- function(slide, sign){
                      view.params = view_params,
                      # Named list with parameters (NULL or value)
                      # for each view.
-                     spot.ids = NULL,
+                     spot.ids = spot.ids,
                      # spot IDs to use. Use all by default.
                      out.alias = misty_out,
                      # bypass.intra

@@ -1,4 +1,4 @@
-library(liana)
+brary(liana)
 library(tidyverse)
 
 

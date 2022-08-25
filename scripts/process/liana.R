@@ -5,7 +5,7 @@ library(tidyverse)
 
 # Read adata
 adata <- readH5AD('data/prc/sc/raw.h5ad')
-inters <- read.csv('data/prc/pca_misty/inters.csv')
+inters <- read.csv('data/prc/pca_misty/inters/ChronicActive|Control_pos_intra.csv')
 
 # Filter by lesion types
 msk <-  adata@colData$lesion_type %in% c('Chronic Active', 'Control')

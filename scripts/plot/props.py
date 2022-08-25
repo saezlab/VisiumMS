@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import scanpy as sc
-
+import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -34,7 +34,9 @@ g = (sns.catplot(col='leiden', y='props', x='lesion_type', data=sc, col_wrap=5, 
 )
 g.fig.subplots_adjust(top=0.8)
 g.fig.suptitle('Cell type proportions in single-cell')
-plt.savefig('figures/props_sc.pdf', bbox_inches='tight')
+res_path = 'figures/props'
+os.makedirs(res_path, exist_ok=True)
+plt.savefig('{0}/sc.pdf'.format(res_path), bbox_inches='tight')
 
 # Extract proportions from visium slides
 vs = []
@@ -52,5 +54,5 @@ g = (sns.catplot(col='leiden', y='props', x='lesion_type', data=vs, col_wrap=5, 
 )
 g.fig.subplots_adjust(top=0.8)
 g.fig.suptitle('Cell type proportions in visium')
-plt.savefig('figures/props_vm.pdf', bbox_inches='tight')
+plt.savefig('{0}/vm.pdf'.format(res_path), bbox_inches='tight')
 

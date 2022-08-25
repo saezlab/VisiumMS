@@ -40,6 +40,9 @@ counts = deg.groupby('name').count()
 genes = counts.index[counts['contrast'] == 1].values
 deg = deg[np.isin(deg['name'], genes)]
 
+# Filter genes that have too much change
+deg = deg[np.abs(deg['logFCs']) < 10]
+
 # Split between pos and neg DEG
 pos = deg[deg['logFCs'] > 0]
 neg = deg[deg['logFCs'] < 0]
@@ -52,7 +55,7 @@ pos = pos.sort_values(['contrast', 'pvals'])
 neg = neg.sort_values(['contrast', 'pvals'])
 
 # Write
-res_path = 'data/prc/sign'
+res_path = 'data/prc/sign/deg'
 os.makedirs(res_path, exist_ok=True)
 pos.to_csv('{0}/pos.csv'.format(res_path), index=False)
 neg.to_csv('{0}/neg.csv'.format(res_path), index=False)

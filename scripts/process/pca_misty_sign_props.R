@@ -53,4 +53,3 @@ pca_misty_importances(lesions, 'pra_15', 'pos')
 pca_misty_importances(lesions, 'int', 'neg')
 pca_misty_importances(lesions, 'jux_5', 'neg')
 pca_misty_importances(lesions, 'pra_15', 'neg')
-

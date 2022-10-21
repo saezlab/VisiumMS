@@ -29,6 +29,12 @@ logFCs, pvals = dc.get_contrast(padata,
 # Extract deg
 deg = dc.format_contrast_results(logFCs, pvals)
 
+# Adjust pvals
+adj_pvals = []
+for contrast in np.unique(deg['contrast'].values):
+    adj_pvals.extend(list(dc.p_adjust_fdr(deg[deg['contrast'] == contrast]['pvals'].values)))
+deg['adj_pvals'] = adj_pvals
+
 # Filter by basic thrs
 deg = deg[(np.abs(deg['logFCs']) > 0.5) & (deg['pvals'] < 0.05)]
 
@@ -59,4 +65,3 @@ res_path = 'data/prc/sign/deg'
 os.makedirs(res_path, exist_ok=True)
 pos.to_csv('{0}/pos.csv'.format(res_path), index=False)
 neg.to_csv('{0}/neg.csv'.format(res_path), index=False)
-

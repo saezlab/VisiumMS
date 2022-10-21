@@ -98,4 +98,3 @@ for sample_id in meta.index:
     slide.obsm['pos'].to_csv('data/prc/visium/{0}/cell_pos_sign.csv'.format(sample_id))
     slide.obsm['neg'].to_csv('data/prc/visium/{0}/cell_neg_sign.csv'.format(sample_id))
     area.to_csv('data/prc/visium/{0}/area.csv'.format(sample_id), index=False)
-

@@ -88,4 +88,3 @@ os.makedirs(ora_path, exist_ok=True)
 t_ora.to_csv('{0}/{1}.csv'.format(ora_path, 'ttl'), index=False)
 p_ora.to_csv('{0}/{1}.csv'.format(ora_path, 'pos'), index=False)
 n_ora.to_csv('{0}/{1}.csv'.format(ora_path, 'neg'), index=False)
-

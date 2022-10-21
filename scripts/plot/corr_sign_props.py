@@ -104,4 +104,3 @@ plot_props_corrs('Chronic Active', 'pos')
 plot_props_corrs('Chronic Active', 'neg')
 plot_props_corrs('Control', 'pos')
 plot_props_corrs('Control', 'neg')
-

@@ -55,4 +55,3 @@ g = (sns.catplot(col='leiden', y='props', x='lesion_type', data=vs, col_wrap=5, 
 g.fig.subplots_adjust(top=0.8)
 g.fig.suptitle('Cell type proportions in visium')
 plt.savefig('{0}/vm.pdf'.format(res_path), bbox_inches='tight')
-

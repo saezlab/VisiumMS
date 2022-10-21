@@ -3,27 +3,47 @@ library(tidyverse)
 
 
 filter_pcs <- function(lesions, view_name, sign_type){
+
     # Read PCS and loadings
     lesions <- stringr::str_c(stringr::str_replace_all(lesions, " ", ""), collapse='|')
 
-    if (view_name == 'intra'){
-        prop_name = 'int'
+    if (view_name == 'int'){
+        prop_name = 'intra'
+
     } else {
         prop_name = view_name
     }
 
     # Load
+    pcs_props_props <- read.csv(sprintf("data/prc/pca_misty/props_props/pcs_%s_%s.csv",
+                            lesions, prop_name))
+    pcs_sign_props <- read.csv(sprintf("data/prc/pca_misty/sign_props/pcs_%s_%s_%s.csv",
+                            lesions, sign_type, view_name))
     ldns_props_props <- read.csv(sprintf("data/prc/pca_misty/props_props/ldns_%s_%s.csv",
-                            lesions, view_name), row.names = 1)
+                            lesions, prop_name), row.names = 1)
     ldns_sign_props <- read.csv(sprintf("data/prc/pca_misty/sign_props/ldns_%s_%s_%s.csv",
-                            lesions, sign_type, prop_name), row.names = 1)
+                            lesions, sign_type, view_name), row.names = 1)
 
-    msk <- ldns_props_props$PC1 > 0.15
-    props_props <- rownames(ldns_props_props[msk,])
+    # ANOVA PCs
+    pval_props_props <- summary(aov(PC1 ~ Lesion.Type,
+                                    data = pcs_props_props))[[1]][["Pr(>F)"]][1]
+    pval_sign_props <- summary(aov(PC1 ~ Lesion.Type,
+                                   data = pcs_sign_props))[[1]][["Pr(>F)"]][1]
 
-    msk <- ldns_sign_props$PC1 > 0.15
-    sign_props <- rownames(ldns_sign_props[msk,])
-
+    # Extract name
+    corr_name <- glue::glue('corr_{view_name}_{sign_type}_props_props')
+    pval_name <- glue::glue('pval_{view_name}_{sign_type}_props_props')
+    props_props <- ldns_props_props[, 'PC1', drop=F] %>%
+        mutate(!!pval_name := pval_props_props) %>%
+        rename(!!corr_name := PC1) %>%
+        as_tibble(rownames="CC")
+    corr_name <- glue::glue('corr_{view_name}_{sign_type}_sign_props')
+    pval_name <- glue::glue('pval_{view_name}_{sign_type}_sign_props')
+    sign_props <- ldns_sign_props[, 'PC1', drop=F] %>%
+        mutate(!!pval_name := pval_sign_props) %>%
+        rename(!!corr_name := PC1) %>%
+        as_tibble(rownames='CC')
+    cc <- inner_join(props_props, sign_props, by='CC')
 
     props_props <- tibble(ints = props_props) %>%
         separate(ints, into=c('A','B'), sep='[|]') %>%
@@ -53,10 +73,10 @@ filter_pcs <- function(lesions, view_name, sign_type){
 
 
 lesions <- c('Chronic Active', 'Control')
-filter_pcs(lesions, 'intra', 'pos')
+
+filter_pcs(lesions, 'int', 'pos')
 filter_pcs(lesions, 'jux_5', 'pos')
 filter_pcs(lesions, 'pra_15', 'pos')
-filter_pcs(lesions, 'intra', 'neg')
+filter_pcs(lesions, 'int', 'neg')
 filter_pcs(lesions, 'jux_5', 'neg')
 filter_pcs(lesions, 'pra_15', 'neg')
-

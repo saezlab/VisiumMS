@@ -89,4 +89,3 @@ meta = pd.read_csv('data/metadata.csv').set_index('sample_id')
 for sample_id in meta.index:
     print(sample_id)
     plot_signs_slide(sample_id)
-

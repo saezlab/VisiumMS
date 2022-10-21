@@ -106,4 +106,3 @@ for sample_id in sample_ids:
     fig.suptitle('{0} proportions'.format(sample_id))
     fig.savefig(os.path.join(output_path, 'deconv_props_{0}.pdf'.format(sample_id)))
     del tmp
-

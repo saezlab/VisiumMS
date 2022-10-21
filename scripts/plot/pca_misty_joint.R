@@ -9,9 +9,9 @@ plot_misty_importances <- function(lesions, view_name){
 
     # Read PCS and loadings
     lesions <- stringr::str_c(stringr::str_replace_all(lesions, " ", ""), collapse='|')
-    pcs <- read.csv(sprintf("data/prc/pca_misty/props_props/pcs_%s_%s.csv",
+    pcs <- read.csv(sprintf("data/prc/pca_misty/joint/pcs_%s_%s.csv",
                             lesions, view_name))
-    ldns <- read.csv(sprintf("data/prc/pca_misty/props_props/ldns_%s_%s.csv",
+    ldns <- read.csv(sprintf("data/prc/pca_misty/joint/ldns_%s_%s.csv",
                             lesions, view_name), row.names = 1)
 
     # ANOVA PCs
@@ -37,8 +37,8 @@ plot_misty_importances <- function(lesions, view_name){
 
     # Plot
     lesions <- stringr::str_c(stringr::str_replace_all(lesions, " ", ""), collapse='|')
-    dir.create("figures/pca_misty_props_props/", showWarnings = FALSE, recursive = TRUE)
-    plot_path <- sprintf("figures/pca_misty_props_props/%s_%s.pdf", lesions, view_name)
+    dir.create("figures/pca_misty_joint/", showWarnings = FALSE, recursive = TRUE)
+    plot_path <- sprintf("figures/pca_misty_joint/%s_%s.pdf", lesions, view_name)
     layout <- "
     ##BBBB
     AABBBB
@@ -57,6 +57,4 @@ plot_misty_importances <- function(lesions, view_name){
 }
 
 lesions <- c('Chronic Active', 'Control')
-plot_misty_importances(lesions, 'intra')
-plot_misty_importances(lesions, 'jux_5')
-plot_misty_importances(lesions, 'pra_15')
+plot_misty_importances(lesions, 'joint')

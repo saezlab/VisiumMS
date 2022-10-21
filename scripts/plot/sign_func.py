@@ -76,4 +76,3 @@ for ctype in ctypes:
 for ctype in ctypes:
     dc.plot_barplot(neg, ctype, vertical=True,
                     save='{0}/{1}_{2}.pdf'.format(ora_path, ctype, 'neg'))
-

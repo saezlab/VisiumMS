@@ -135,4 +135,7 @@ for (sample_id in sample_ids){
         run_misty_sign(slide, sign)
     }
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> Added plotting scripts

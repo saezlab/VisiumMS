@@ -46,4 +46,3 @@ lesions <- c('Chronic Active', 'Control')
 pca_misty_importances(lesions, 'intra')
 pca_misty_importances(lesions, 'jux_5')
 pca_misty_importances(lesions, 'pra_15')
-

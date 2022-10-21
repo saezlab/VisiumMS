@@ -64,4 +64,3 @@ plot_misty_importances(lesions, 'pra_15', 'pos')
 plot_misty_importances(lesions, 'int', 'neg')
 plot_misty_importances(lesions, 'jux_5', 'neg')
 plot_misty_importances(lesions, 'pra_15', 'neg')
-

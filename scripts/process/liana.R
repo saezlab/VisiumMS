@@ -16,7 +16,7 @@ cell_types <- unique(unname(unlist(inters)))
 cell_types <- gsub('\\.', '_', cell_types)
 
 # Filter by cell types
-msk <-  adata@colData$leiden %in% cell_types
+msk <-  adata@colData$leiden %in% c('Oligos', 'Astros', 'Microglia', 'Macrophages_f')#cell_types
 adata <- adata[, msk]
 
 # Rename assays
@@ -31,6 +31,7 @@ SingleCellExperiment::colLabels(adata) <- adata@colData$leiden
 
 run_liana <- function(adata, lesion_type){
 
+    print(lesion_type)
     # Filter by lesion_type
     msk <- adata@colData$lesion_type == lesion_type
     tmp <- adata[, msk]
@@ -51,4 +52,3 @@ run_liana <- function(adata, lesion_type){
 
 run_liana(adata, 'Chronic Active')
 run_liana(adata, 'Control')
-

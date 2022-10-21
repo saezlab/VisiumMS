@@ -140,4 +140,3 @@ ax.tick_params(axis='x', rotation=45)
 ax.tick_params(axis='y', rotation=0)
 ax.set_title('T-value differences in signature effect')
 fig.savefig('{0}/heatmap_effect.pdf'.format(res_path), bbox_inches='tight')
-

@@ -26,4 +26,3 @@ for i in range(n_cells):
     ctype = cell_types[i]
     dc.plot_volcano(logFCs, pvals, ctype, lFCs_limit=10, top=10,
                     save='{0}/{1}.pdf'.format(res_path, ctype))
-

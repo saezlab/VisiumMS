@@ -8,25 +8,13 @@ from scipy.interpolate import interpn
 
 '''Plotting functions'''
 
-cond_colors = {
-    'Healthy' : '#440154FF',
-    'HF-A' : '#21908CFF',
-    'HF-CKD' : '#FDE725FF',
+cond_palette = {
+    'Control': (0.8392156862745098, 0.15294117647058825, 0.1568627450980392),
+    'Acute': (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    'Chronic Active': (1.0, 0.4980392156862745, 0.054901960784313725),
+    'Chronic Inactive': (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
 }
 
-ctype_colors = {
-    'adipocytes' : '#D51F26',
-    'cardiomyocyte' : '#272E6A',
-    'endothelial' : '#208A42',
-    'fibroblast' : '#89288F',
-    'lymphatic_endo' : '#F47D2B',
-    'macrophages' : '#FEE500',
-    'mast_cells' : '#8A9FD1',
-    'neuronal' : '#C06CAB',
-    'pericyte' : '#D8A767',
-    'T-cells' : '#90D5E4',
-    'vSMCs' : '#89C75F'
-}
 
 def density_scatter(x, y, ax, bins=30, **kwargs):
     x, y = x.astype(np.float32), y.astype(np.float32)

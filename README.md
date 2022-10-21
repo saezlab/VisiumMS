@@ -1,2 +1,2 @@
 # VisiumMS
-Colaboration with Schirmerlab were we study Multiple Sclerosis using Visium
+Scripts to reproduce results from "Spatial cell type mapping of multiple sclerosis lesions".

@@ -26,9 +26,11 @@ markers = df.groupby('group').head(10).groupby('group')['names'].apply(lambda x:
 markers.index = [idx.split('.')[0] for idx in markers.index]
 markers = dict(markers)
 
-# Change other markes for 1
+# Change other markers
 markers['1'][-1] = 'P2RY12'
 markers['1'][-2] = 'CX3CR1'
+markers['2'][-3] = 'C1QA'
+markers['3'][5] = 'C1QB'
 
 # Plot
 fig = sc.pl.dotplot(adata, markers, groupby='leiden', standard_scale='var', return_fig=True)

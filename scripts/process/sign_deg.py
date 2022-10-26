@@ -65,3 +65,4 @@ res_path = 'data/prc/sign/deg'
 os.makedirs(res_path, exist_ok=True)
 pos.to_csv('{0}/pos.csv'.format(res_path), index=False)
 neg.to_csv('{0}/neg.csv'.format(res_path), index=False)
+deg.to_csv('{0}/deg.csv'.format(res_path), index=False)

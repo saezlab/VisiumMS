@@ -1,30 +1,35 @@
 
 from pathlib import Path
 import os
-from subprocess import Popen, STDOUT, PIPE
+from subprocess import Popen, STDOUT
 import scanpy as sc
-import argparse
 
-# TODO: temporary command line argument
-parser = argparse.ArgumentParser()
-parser.add_argument("recompute", help='whether cellbender should be rerun if output is already present', default=True)
-args = parser.parse_args()
-recompute = args.recompute in [True, "True", "true"]
-print(f"{recompute=}")
+# harcoded configs
+recompute = False
 
 #current_folder = globals()['_dh'][0] # for jupyter notebook
 current_folder = Path(__file__).parent
 raw_location = current_folder / ".." / ".." / "data" / "raw_old_sn"
 filtered_location = current_folder / ".." / ".." / "data" / "raw" / "visium"
+output_dir = current_folder / ".." / ".." / "data" / "cellbender_out"
+
+# verbose, helpful for debugging
+print("recompute: ", recompute)
+print("raw_location: ", raw_location)
+print("filtered_location: ", filtered_location)
+print("output_dir: ", output_dir)
+
 samples = [sample for sample in os.listdir(raw_location) if not sample.startswith(".")]
 
 for sample in samples:
 
-    if ("cell_bender_matrix.h5" in os.listdir(raw_location / sample)) and (not recompute):
+    output_dir_sample = output_dir / sample
+    output_dir_sample.mkdir(parents=True, exist_ok=True)
+    print(output_dir_sample)
+
+    if ("cell_bender_matrix.h5" in os.listdir(output_dir_sample)) and (not recompute):
         print(f"Cellbender was run before for sample {sample}")
         continue
-
-    print(sample)
 
     # TODO: Here using as expected cell number the filtered barcode matrix
     filtered_adata = sc.read_10x_h5(filtered_location / sample / "outs" / "filtered_feature_bc_matrix.h5")
@@ -35,8 +40,12 @@ for sample in samples:
     print(input_h5)
 
     # create log file
-    log_file = raw_location / sample / "cell_bender_log.txt"
+    log_file = output_dir / sample / "cell_bender_custom_log.txt"
     with open(log_file, "w") as f:
+
+        f.write("input_h5: " + str(input_h5) + "\n")
+
+        f.write("output_dir_sample: " + str(output_dir_sample) + "\n")
 
         p = Popen(["cellbender", "remove-background", 
             "--input", input_h5, # input file
@@ -49,7 +58,7 @@ for sample in samples:
             "--epochs", str(150), # how many epochs to train, default 150
             "--posterior-batch-size",  str(5), # batch size for creating the posterior, default 20 (important if running of of GPU RAM)
             "--cells-posterior-reg-calc", str(50)], # number of cells used to estimate posterior regularization lambda, default 100
-            cwd=raw_location / sample,
+            cwd=output_dir_sample,
             stderr=STDOUT,
             stdout=f
             )
@@ -58,4 +67,4 @@ for sample in samples:
                                 # don't spawn another process if p has not finished yet (sequential handling)
 
 # install cellbender: pip install -e .
-# call: python scripts/process/cell_bender.py
+# call: python scripts/process/cell_bender.py 

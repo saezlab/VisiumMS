@@ -39,4 +39,4 @@ for sample in adata_objects.keys():
     sc.pl.dotplot(adata, var_names=genes, groupby="cell_type", title=sample, save=sample)
 
 adata_global = sc.concat(list(adata_objects.values()), join="outer", label="sample", keys=list(adata_objects.keys()))
-sc.pl.dotplot(adata, var_names=gene_list, groupby="cell_type", swap_axes=True, figsize=(6, 12), save="global")
+sc.pl.dotplot(adata, var_names=gene_list, groupby="cell_type", swap_axes=True, figsize=(6, 12), save="global", standard_scale='var')

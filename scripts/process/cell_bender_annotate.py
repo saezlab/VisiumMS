@@ -101,34 +101,32 @@ for sample in samples:
         distances, indices = nbrs.kneighbors(adata_no_annot_tmp.obsm["X_pca"])
         
         # NOTE: we will add a cautionary annotation and a forced annotation, where we don't care for the NN/2 threshold
-        annotation, annotation_forced = [], []
-        for cell_i in range(len(adata_no_annot)):
-            barcode = adata_no_annot.obs.index[cell_i]
-            # if the barcode is present in the annotated object, then use the annotation
-            if barcode in adata_annot.obs.index:
-                annotation.append(adata_annot.obs.loc[barcode, "cell_type"])
-                annotation_forced.append(adata_annot.obs.loc[barcode, "cell_type"])
-            # else, use the annotation of the nearest neighbors
-            else:
-                nearest_neighbors = indices[cell_i, :]
-                nn_annot = adata_annot.obs.iloc[nearest_neighbors, :]["cell_type"].value_counts()
-                # if max count below 50%, then set to "unannotated"
-                if nn_annot.iloc[0] < NN/2:
-                    annotation.append("unannotated")
+        for annot_label in ["cell_type", "leiden"]:
+            annot_label_forced = annot_label + "_forced"
+            annotation, annotation_forced = [], []
+            for cell_i in range(len(adata_no_annot)):
+                barcode = adata_no_annot.obs.index[cell_i]
+                # if the barcode is present in the annotated object, then use the annotation
+                if barcode in adata_annot.obs.index:
+                    annotation.append(adata_annot.obs.loc[barcode, annot_label])
+                    annotation_forced.append(adata_annot.obs.loc[barcode, annot_label])
+                # else, use the annotation of the nearest neighbors
                 else:
-                    # get label with max count
-                    annotation.append(nn_annot.index[0])
-                annotation_forced.append(nn_annot.index[0])
-        adata_no_annot.obs["cell_type"] = annotation
+                    nearest_neighbors = indices[cell_i, :]
+                    nn_annot = adata_annot.obs.iloc[nearest_neighbors, :][annot_label].value_counts()
+                    # if max count below 50%, then set to "unannotated"
+                    if nn_annot.iloc[0] < NN/2:
+                        annotation.append("unannotated")
+                    else:
+                        # get label with max count
+                        annotation.append(nn_annot.index[0])
+                    annotation_forced.append(nn_annot.index[0])
+            adata_no_annot.obs[annot_label] = annotation
+            adata_no_annot.obs[annot_label_forced] = annotation_forced
 
-        print(adata_no_annot.obs["cell_type"].value_counts())
-        print(adata_no_annot.obs["cell_type"].value_counts(), file=f)
 
-        print(adata_no_annot)
+            print(adata_no_annot.obs[annot_label].value_counts())
+            print(adata_no_annot.obs[annot_label].value_counts(), file=f)
 
         # save the annotated object
         adata_no_annot.write_h5ad(cellbender_out / sample / "cell_bender_matrix_filtered_qc_annotated.h5ad")
-
-        # save the forced annotation object
-        adata_no_annot.obs["cell_type"] = annotation_forced
-        adata_no_annot.write_h5ad(cellbender_out / sample / "cell_bender_matrix_filtered_qc_annotated_forced.h5ad")

@@ -237,6 +237,9 @@ for sample in samples:
     get_tiles(adata, out_path = (tile_out / sample), quality=QUALITY, crop_size=crop_size)
     get_features(adata)
 
+    adata.obs["detected_genes"] = np.sum(adata.X > 0, axis=1)
+    adata.obs["total_umis"] = np.sum(adata.X, axis=1)
+
     adata.write(image_features_out / (sample + ".h5ad"))
 
     # if annotated file exists add the old leiden clustering and make a plot
@@ -252,8 +255,9 @@ for sample in samples:
             s=20)
         plt.suptitle(sample)
         fig.savefig(image_features_out / (sample + "_img_feature_umap_leiden.png"), dpi=300)
-        plt.clf(); plt.cla(); plt.close()
+        plt.close()
 
+    fig, ax = plt.subplots(1, 1, figsize=(10, 10))
     sns.scatterplot(
         x=adata.obsm["image_features_umap"][:, 0],
         y=adata.obsm["image_features_umap"][:, 1],
@@ -261,8 +265,9 @@ for sample in samples:
         s=20)
     plt.suptitle(sample)
     fig.savefig(image_features_out / (sample + "_img_feature_umap_detected_genes.png"), dpi=300)
-    plt.clf(); plt.cla(); plt.close()
+    plt.close()
 
+    fig, ax = plt.subplots(1, 1, figsize=(10, 10))
     sns.scatterplot(
         x=adata.obsm["image_features_umap"][:, 0],
         y=adata.obsm["image_features_umap"][:, 1],
@@ -270,4 +275,4 @@ for sample in samples:
         s=20)
     plt.suptitle(sample)
     fig.savefig(image_features_out / (sample + "_img_feature_umap_total_umis.png"), dpi=300)
-    plt.clf(); plt.cla(); plt.close()
+    plt.close()

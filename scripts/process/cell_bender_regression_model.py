@@ -36,29 +36,34 @@ adata_raw.var_names_make_unique()
 adata_raw = adata_raw[~adata_raw.obs[label_name].isin(labels_to_remove), :]
 
 # split MS and control samples
-sample_meta = pd.read_excel(current_folder / ".." / ".." / "data" / "Metadata_all.xlsx")
+sample_meta = pd.read_excel(current_folder / ".." / ".." / "data" / "Metadata_all.xlsx", sheet_name="snRNA-seq")
+ms_samples = sample_meta.sample_id[sample_meta.Condition=="MS"]
+ctrl_samples = sample_meta.sample_id[sample_meta.Condition=="Control"]
 
-#ms_samples = sample_meta["Brain bank ID"][sample_meta.Condition=="MS"]
-#ctrl_samles = sample_meta["Brain bank ID"][sample_meta.Condition=="Control"]
+missing_ms_samples = ms_samples[~np.isin(ms_samples, samples)]
+ms_samples = ms_samples[np.isin(ms_samples, samples)]
+missing_ctrl_samples = ctrl_samples[~np.isin(ctrl_samples, samples)]
+ctrl_samples = ctrl_samples[np.isin(ctrl_samples, samples)]
+if len(missing_ms_samples) > 0:
+    print(f"Missing MS samples:\n{missing_ms_samples}")
+if len(missing_ctrl_samples) > 0:
+    print(f"Missing control samples:\n{missing_ctrl_samples}")
 
-ms_samples = [sample for sample in adata_raw.obs[sample_id].unique() if sample.startswith("MS")]
-ctrl_samles = [sample for sample in adata_raw.obs[sample_id].unique() if sample not in ms_samples]
-
+# create the anndata objects
 ms_adata_raw = adata_raw[adata_raw.obs[sample_id].isin(ms_samples), :].copy()
-# print size of MS dataset
 print(f"MS dataset:\n{ms_adata_raw}")
 print(f"MS samples:\n{ms_adata_raw.obs[sample_id].unique()}")
-ctrl_adata_raw = adata_raw[adata_raw.obs[sample_id].isin(ctrl_samles), :].copy()
-print(f"Control dataset:\n{ms_adata_raw}")
-print(f"Control samples:\n{ctrl_adata_raw.obs[sample_id].unique()}")
-del(adata_raw)
 
-# NOTE: I previously though that the cellbender output was floats
-#ms_adata_raw.X = np.round(ms_adata_raw.X).astype(int)
-#ctrl_adata_raw.X = np.round(ctrl_adata_raw.X).astype(int)
+ctrl_adata_raw = adata_raw[adata_raw.obs[sample_id].isin(ctrl_samples), :].copy()
+print(f"Control dataset:\n{ctrl_adata_raw}")
+print(f"Control samples:\n{ctrl_adata_raw.obs[sample_id].unique()}")
+
+all_adata_raw = adata_raw
+print(f"All dataset:\n{all_adata_raw}")
+print(f"All samples:\n{all_adata_raw.obs[sample_id].unique()}")
 
 # Run one model for MS and for healthy controls
-for adata, identifier in zip([ms_adata_raw, ctrl_adata_raw], ["MS", "Control"]):
+for adata, identifier in zip([ms_adata_raw, ctrl_adata_raw, all_adata_raw], ["MS", "Control", "All"]):
 
     tmp_out = model_out / (identifier + "_reg_model")
     tmp_out.mkdir(parents=True, exist_ok=True)
@@ -82,7 +87,11 @@ for adata, identifier in zip([ms_adata_raw, ctrl_adata_raw], ["MS", "Control"]):
     mod.view_anndata_setup()
 
     # Training 
-    mod.train(max_epochs=250, batch_size=2500, train_size=1, lr=0.002, use_gpu=True)
+    mod.train(max_epochs=250,  # 
+              batch_size=2500, # default
+              train_size=1,    # use full training set
+              lr=0.002,        # default learning rate for CloppedAdam optimizer
+              use_gpu=True)
 
     # Save training plot
     fig, ax = plt.subplots(1,1, facecolor='white')

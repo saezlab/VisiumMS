@@ -45,13 +45,13 @@ stage_vec = np.array([sample_lesion_dict[sample] if sample in sample_lesion_dict
 
 ### 1. mean image features per sample ###
 mean_image_features = np.array([adata.obsm["image_features"].mean(axis=0) for adata in adata_dict.values()])
-pca_coord = PCA(n_components=min(image_features.shape)).fit_transform(image_features)
+pca_coord = PCA(n_components=min(mean_image_features.shape)).fit_transform(mean_image_features)
 
 fig, ax = plt.subplots(figsize=(10, 10))
 sns.scatterplot(x=pca_coord[:, 0], y=pca_coord[:, 1], hue=stage_vec)
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 fig.savefig(output_dir / ("pca_mean_image_features_" + QUALITY + ".png"), dpi=300)
-plt.clf(); plt.cla(); plt.close()
+plt.close()
 ### ------------------------------- ###
 
 ### 2. cluster cells based on image feature space and compute fractions of clusters per image ###
@@ -74,7 +74,7 @@ pca_coord = PCA(n_components=min(cluster_counts.shape)).fit_transform(cluster_co
 fig, ax = plt.subplots(figsize=(10, 10))
 sns.clustermap(cluster_counts, cmap="Blues")
 fig.savefig(output_dir / ("ht_clustered_image_features_" + QUALITY + ".png"), dpi=300)
-plt.clf(); plt.cla(); plt.close()
+plt.close()
 
 fig, ax = plt.subplots(figsize=(10, 10))
 sns.scatterplot(x=pca_coord[:, 0], y=pca_coord[:, 1], hue=stage_vec)
@@ -82,5 +82,5 @@ for i, txt in enumerate(cluster_counts.index):
     plt.annotate(txt, (pca_coord[i, 0], pca_coord[i, 1]))
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 fig.savefig(output_dir / ("pca_clustered_image_features_" + QUALITY + ".png"), dpi=300)
-plt.clf(); plt.cla(); plt.close()
+plt.close()
 ### ------------------------------- ###

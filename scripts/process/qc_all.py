@@ -1,4 +1,7 @@
 
+# python scripts/process/qc_all.py --output cellbender
+# python scripts/process/qc_all.py --output cellranger
+
 import scanpy as sc
 import scanpy.external as sce
 
@@ -8,17 +11,39 @@ import pandas as pd
 import pickle
 import os
 from pathlib import Path
+import argparse
+
+# add command line flag arguments to specify either "cellbender" or "cellranger" output
+parser = argparse.ArgumentParser()
+parser.add_argument("--output", type=str, required=True)
+args = parser.parse_args()
+
+# set up relative paths within the project
+current_folder = Path(__file__).parent
+if args.output == "cellbender":
+    input_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellbender"
+    output_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellbender_qc"
+    mtx_name = "cell_bender_matrix_filtered.h5"
+elif args.output == "cellranger":
+    input_dir = current_folder / ".." / ".." / "data" / "raw" / "sc"
+    output_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellranger_qc"
+    mtx_name = "filtered_feature_bc_matrix.h5"
+else:
+    raise ValueError("output must be either 'cellbender' or 'cellranger'")
+output_dir.mkdir(parents=True, exist_ok=True)
+
+# verbose
+print("input_dir: ", input_dir)
+print("output_dir: ", output_dir)
+print("mtx_name: ", mtx_name)
 
 # Load diss genes
 diss_path = "https://raw.githubusercontent.com/kieranrcampbell/scrnaseq-digestion-paper/master/data/deliverables/coregene_df-FALSE-v3.csv"
 diss_genes = pd.read_csv(diss_path).sort_values('PValue').head(200).gene_symbol.tolist()
 
-#current_folder = globals()['_dh'][0]
-current_folder = Path(__file__).parent
-output_dir = current_folder / ".." / ".." / "data" / "cellbender_out"
+samples = [sample for sample in os.listdir(input_dir) if not sample.startswith(".")]
 
-samples = [sample for sample in os.listdir(output_dir) if not sample.startswith(".")]
-
+# TODO: Not yet implemented this
 # If needed set up specific thresholds for doublet detection
 # The value should divide the bimodal distirbution in two
 doublet_thresholds = {
@@ -28,7 +53,7 @@ doublet_thresholds = {
 for sample in samples:
     print(sample)
     # Read raw data
-    adata = sc.read_10x_h5(output_dir / sample / "cell_bender_matrix_filtered.h5")
+    adata = sc.read_10x_h5(input_dir / sample / mtx_name)
     adata.var_names_make_unique()
 
     # Basic filtering
@@ -78,8 +103,5 @@ for sample in samples:
     adata = adata[msk, :]
 
     # Save results
-    pickle.dump(plot_data, open(output_dir / sample / f"{sample}.pkl", "wb"))
-    adata.write(output_dir / sample  / "cell_bender_matrix_filtered_qc.h5")
-
-# python scripts/process/cell_bender_qc.py
-
+    pickle.dump(plot_data, open(output_dir / f"{sample}.pkl", "wb"))
+    adata.write(output_dir / (sample + ".h5ad"))

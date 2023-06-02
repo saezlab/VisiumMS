@@ -9,8 +9,8 @@ recompute = False
 
 #current_folder = globals()['_dh'][0] # for jupyter notebook
 current_folder = Path(__file__).parent
-input_dir = current_folder / ".." / ".." / "data" / "Samples_snRNA"
-output_dir = current_folder / ".." / ".." / "data" / "cellbender_out_new"
+input_dir = current_folder / ".." / ".." / "data" / "raw" / "sc"
+output_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cell_bender"
 
 # verbose, helpful for debugging
 print("recompute: ", recompute)

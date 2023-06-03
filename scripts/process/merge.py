@@ -29,7 +29,7 @@ if args.output == "cellbender":
     out_name = "cellbender_merged.h5ad"
 elif args.output == "cellranger":
     input_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellranger_qc"
-    out_name = "cellbender_merged.h5ad"
+    out_name = "cellranger_merged.h5ad"
 else:
     raise ValueError("output must be either 'cellbender' or 'cellranger'")
 
@@ -93,7 +93,7 @@ sc.pp.scale(adata)
 sc.tl.pca(adata, svd_solver='arpack')
 
 # Run UMAP
-sc.pp.neighbors(adata)  # some bug is happening here...
+sc.pp.neighbors(adata)
 sc.tl.umap(adata)
 
 # Write to file

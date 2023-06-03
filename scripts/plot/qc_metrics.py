@@ -1,24 +1,38 @@
+
+# python scripts/plot/qc_metrics.py --output cellbender
+# python scripts/plot/qc_metrics.py --output cellranger
+
 import numpy as np
 import pandas as pd
 import pickle
 
 import os
 import argparse
+from pathlib import Path
 from plotting import *
 
 """
 Script to plot different QC metrics after filtering the data.
 """
 
-# Read command line and set args
-parser = argparse.ArgumentParser(prog='qc', description='Run QC per sample')
-parser.add_argument('-i', '--input_dir', help='Input directory containing all sample directories', required=True)
-parser.add_argument('-o', '--output_dir', help='Output directory where to store the figures', required=True)
-args = vars(parser.parse_args())
+# add command line flag arguments to specify either "cellbender" or "cellranger" output
+parser = argparse.ArgumentParser()
+parser.add_argument("--output", type=str, required=True)
+args = parser.parse_args()
 
-input_path = args['input_dir']
-output_path = args['output_dir']
-###############################
+# set up relative paths within the project
+current_folder = Path(__file__).parent
+if args.output == "cellbender":
+    input_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellbender_qc"
+    output_dir = current_folder / ".." / ".." / "out" / "cellbender_qc"
+elif args.output == "cellranger":
+    input_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellranger_qc"
+    output_dir = current_folder / ".." / ".." / "out" / "cellranger_qc"
+else:
+    raise ValueError("output must be either 'cellbender' or 'cellranger'")
+output_dir.mkdir(parents=True, exist_ok=True)
+
+samples = [s.split(".")[0] for s in os.listdir(input_dir) if s.endswith('.pkl')]
 
 # Initialize sumary variables
 total_df = pd.DataFrame(columns=['n_genes_by_counts','total_counts',
@@ -27,12 +41,9 @@ summary_df = []
 total_n_rem = np.zeros(5)
 
 # Run QC plots for each sample and store summary
-for sample in os.listdir(input_path):
-    path = os.path.join(input_path, sample)
-    if not os.path.isdir(path) or sample.startswith('.'):
-        continue
+for sample in samples:
     print(sample)
-    plot_data = pickle.load(open(os.path.join(path, sample+'.pkl'), "rb"))
+    plot_data = pickle.load(open(input_dir / (sample + ".pkl"), "rb"))
 
     # Filter params
     mt_thr = plot_data['mt_thr']
@@ -91,7 +102,7 @@ for sample in os.listdir(input_path):
     fig.set_facecolor('white')
 
     # Write to png
-    fig.savefig(os.path.join(output_path, 'qc_'+sample+'.png'))
+    fig.savefig(output_dir / ("qc_"+sample+".png"))
 
     # Append
     total_df = pd.concat([total_df, df], ignore_index=True)
@@ -120,4 +131,4 @@ fig.subplots_adjust(top=0.88)
 fig.set_facecolor('white')
 
 # Save
-fig.savefig(os.path.join(output_path, 'qc_summary.png'))
+fig.savefig(output_dir / 'qc_summary.png')

@@ -211,7 +211,7 @@ image_dir = current_folder / ".." / ".." / "data" / "raw" / "images"
 visium_dir = current_folder / ".." / ".." / "data" / "raw" / "vis"
 tile_out = current_folder / ".." / ".." / "data" / "prc" / "images" / ("tiles_" + QUALITY)
 tile_out.mkdir(parents=True, exist_ok=True)
-image_features_out = current_folder / ".." / ".." / "data" / "prc" / "images" / ("image_features_" + QUALITY)
+image_features_out = current_folder / ".." / ".." / "data" / "prc" / "images" / ("deep_image_features_" + QUALITY)
 image_features_out.mkdir(parents=True, exist_ok=True)
 samples = [f for f in os.listdir(image_dir) if not f.startswith(".")]
 

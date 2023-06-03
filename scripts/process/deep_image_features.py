@@ -207,18 +207,17 @@ def get_features(adata):
     adata.obsm["image_features_umap"] = umap_coord
 
 current_folder = Path(__file__).parent
-processed_dir = current_folder / ".." / ".." / "data" / "uscsc_dump" 
-hires_dir = current_folder / ".." / ".." / "data" / "Sample_pics"
-visium_dir = current_folder / ".." / ".." / "data" / "Samples_visium"
-tile_out = current_folder / ".." / ".." / "data" / ("tiles_" + QUALITY)
+image_dir = current_folder / ".." / ".." / "data" / "raw" / "images"
+visium_dir = current_folder / ".." / ".." / "data" / "raw" / "vis"
+tile_out = current_folder / ".." / ".." / "data" / "prc" / "images" / ("tiles_" + QUALITY)
 tile_out.mkdir(parents=True, exist_ok=True)
-image_features_out = current_folder / ".." / ".." / "data" / ("image_features_" + QUALITY)
+image_features_out = current_folder / ".." / ".." / "data" / "prc" / "images" / ("image_features_" + QUALITY)
 image_features_out.mkdir(parents=True, exist_ok=True)
-samples = [f for f in os.listdir(hires_dir) if not f.startswith(".")]
+samples = [f for f in os.listdir(image_dir) if not f.startswith(".")]
 
 for sample in samples:
     print(sample)
-    adata = Read10X(spaceranger_path=(visium_dir / sample / "outs"), img_path=(hires_dir / sample / (sample+"_pic.tif")))
+    adata = Read10X(spaceranger_path=(visium_dir / sample / "outs"), img_path=(image_dir / sample / (sample+"_pic.tif")))
     
     # verbose output
     for key, val in adata.uns["spatial"]["id"]["images"].items():
@@ -239,23 +238,7 @@ for sample in samples:
 
     adata.obs["detected_genes"] = np.sum(adata.X > 0, axis=1)
     adata.obs["total_umis"] = np.sum(adata.X, axis=1)
-
     adata.write(image_features_out / (sample + ".h5ad"))
-
-    # if annotated file exists add the old leiden clustering and make a plot
-    annotated_file = processed_dir / ("visium_" + sample + ".h5ad")
-    if annotated_file.exists():
-        adata_annotated = sc.read_h5ad(annotated_file)
-        adata.obs = adata.obs.join(adata_annotated.obs.loc[:, ["leiden"]], how="left")
-        fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-        sns.scatterplot(
-            x=adata.obsm["image_features_umap"][:, 0],
-            y=adata.obsm["image_features_umap"][:, 1],
-            hue=adata.obs["leiden"],
-            s=20)
-        plt.suptitle(sample)
-        fig.savefig(image_features_out / (sample + "_img_feature_umap_leiden.png"), dpi=300)
-        plt.close()
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 10))
     sns.scatterplot(

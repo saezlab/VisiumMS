@@ -36,8 +36,12 @@ for arg in vars(args):
     print(arg, getattr(args, arg))
 
 # check the arguments
+if args.output not in ['cellbender', 'cellranger']:
+    raise ValueError("Model must be in ['cellbender', 'cellranger']'")
 if args.model not in ['all', 'condition', 'lesion_type']:
-    raise ValueError("Model must be in ['all', 'disease', 'condition']'")
+    raise ValueError("Model must be in ['all', 'condition', 'lesion_type']")
+if args.recompute not in ["True", "true", "False", "false"]:
+    raise ValueError("Recompute must be in ['True', 'true', 'False', 'false']")
 
 sample = args.sample
 n_cells_spot = args.n_cells_spot

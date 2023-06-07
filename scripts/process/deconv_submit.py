@@ -17,12 +17,16 @@ parser.add_argument("--output", type=str, required=True, help="['cellbender', 'c
 parser.add_argument("--model", type=str, required=True, help="['all', 'condition', 'lesion_type']")
 parser.add_argument("--n_cells_spot", type=int, required=False, default=5, help="prior for number of cells per spot")
 parser.add_argument("--d_alpha", type=int, required=False, default=20, help="prior for heterogeneity?")
-parser.add_argument("--recompute", type=str, required=False, default="False", help="prior for heterogeneity?")
+parser.add_argument("--recompute", type=str, required=False, default="False", help="")
 args = parser.parse_args()
 
 # check the arguments
+if args.output not in ['cellbender', 'cellranger']:
+    raise ValueError("Model must be in ['cellbender', 'cellranger']'")
 if args.model not in ['all', 'condition', 'lesion_type']:
     raise ValueError("Model must be in ['all', 'condition', 'lesion_type']")
+if args.recompute not in ["True", "true", "False", "false"]:
+    raise ValueError("Recompute must be in ['True', 'true', 'False', 'false']")
 
 output = args.output
 reg_model = args.model

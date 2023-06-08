@@ -50,8 +50,8 @@ recompute = args.recompute in ["True", "true"]
 
 # set the paths
 current_folder = Path(__file__).parent
-visium_dir = current_folder / ".." / ".." / "data" / "raw" / "visium"
-model_dir = current_folder / ".." / ".." / "data" / "prc" / args.output
+visium_dir = current_folder / ".." / ".." / "data" / "raw" / "vis"
+model_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "c2l_model" / args.output
 
 # get the correct regression model
 sample_meta = pd.read_excel(current_folder / ".." / ".." / "data" / "Metadata_all.xlsx", sheet_name="Visium")
@@ -80,11 +80,11 @@ elif args.model == "lesion_type":
         raise ValueError("Unknown lesion type")
 else:
     raise ValueError("Unknown model")
-reg_path = model_dir / reg_model
+reg_path = model_dir / (reg_model + "_reg_model")
 inf_aver = pd.read_csv(reg_path / "inf_aver.csv", index_col=0)
 print("Using model", reg_model, "for sample", sample, "and model specification", args.model)
 
-c2l_out = current_folder / ".." / ".." / "data" / "prc" / "c2l_out" / args.output
+c2l_out = current_folder / ".." / ".." / "data" / "prc" / "vis" / "c2l_out" / args.output
 c2l_out.mkdir(parents=True, exist_ok=True)
 
 tmp_out = c2l_out / sample

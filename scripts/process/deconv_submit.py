@@ -1,11 +1,11 @@
 
 # usage examples
-# python scripts/process/cell_bender_c2l_submit.py --output cellbender --model all --recompute False
-# python scripts/process/cell_bender_c2l_submit.py --output cellbender --model condition --recompute False
-# python scripts/process/cell_bender_c2l_submit.py --output cellbender --model lesion_type --recompute False
-# python scripts/process/cell_bender_c2l_submit.py --output cellranger --model all --recompute False
-# python scripts/process/cell_bender_c2l_submit.py --output cellranger --model condition --recompute False
-# python scripts/process/cell_bender_c2l_submit.py --output cellranger --model lesion_type --recompute False
+# python scripts/process/deconv_submit.py --output cellbender --model all --recompute False
+# python scripts/process/deconv_submit.py --output cellbender --model condition --recompute False
+# python scripts/process/deconv_submit.py --output cellbender --model lesion_type --recompute False
+# python scripts/process/deconv_submit.py --output cellranger --model all --recompute False
+# python scripts/process/deconv_submit.py --output cellranger --model condition --recompute False
+# python scripts/process/deconv_submit.py --output cellranger --model lesion_type --recompute False
 
 import os
 from pathlib import Path
@@ -35,11 +35,11 @@ d_alpha = args.d_alpha
 recompute = args.recompute in ["True", "true"]
 
 current_folder = Path(__file__).parent
-visium_dir = current_folder / ".." / ".." / "data" / "raw" / "visium"
+visium_dir = current_folder / ".." / ".." / "data" / "raw" / "vis"
 samples = [f for f in os.listdir(visium_dir) if not f.startswith('.')]
 print(samples)
 
-script = current_folder / "cell_bender_c2l.sh"
+script = current_folder / "deconv.sh"
 script = str(script.resolve())
 print(script)
 

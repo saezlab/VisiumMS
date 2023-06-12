@@ -1,6 +1,6 @@
 
 # usage
-# python scripts/process/eval_deconv.py
+# gi
 
 import pandas as pd
 import numpy as np

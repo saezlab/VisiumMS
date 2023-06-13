@@ -32,6 +32,7 @@ import argparse
 label_name = "cell_types"
 sample_id = "sample_id"
 recompute = False
+min_cells_per_type = 20
 
 # add command line flag arguments to specify either "cellbender" or "cellranger" output
 parser = argparse.ArgumentParser()
@@ -112,6 +113,15 @@ for condition, samples in cond_dict.items():
     adata = adata_raw[adata_raw.obs[sample_id].isin(samples), :].copy()
     print(adata)
     print(adata.obs.sample_id.unique())
+
+    # remove cell types with fewer than min_cells_per_type
+    cell_counts = adata.obs[label_name].value_counts()
+    print(cell_counts)
+    labels_to_remove = cell_counts[cell_counts < min_cells_per_type].index.to_list()
+    print(f"Removing:\n{labels_to_remove}")
+    adata = adata[~adata.obs[label_name].isin(labels_to_remove), :].copy()
+    print(adata)
+
     tmp_out = output_dir / (condition + "_reg_model")
     tmp_out.mkdir(parents=True, exist_ok=True)
 

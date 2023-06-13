@@ -31,7 +31,7 @@ import argparse
 # TODO: harcoded configs
 label_name = "cell_types"
 sample_id = "sample_id"
-recompute = False
+recompute = True
 min_cells_per_type = 20
 
 # add command line flag arguments to specify either "cellbender" or "cellranger" output
@@ -57,7 +57,8 @@ if args.output == "cellbender":
     output_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "c2l_model" / "cellbender"
 
 elif args.output == "cellranger":
-    adata_annotated = sc.read_h5ad(current_folder / ".." / ".." / "data" / "prc" / "sc" / "annotated_cellranger_mod.h5ad")
+    # NOTE: Updated cellranger atlas from Celia on 13.06: "annotated_cellranger.h5ad"
+    adata_annotated = sc.read_h5ad(current_folder / ".." / ".." / "data" / "prc" / "sc" / "annotated_cellranger.h5ad")
     raw_input_dir = current_folder / ".." / ".." / "data" / "raw" / "sc"
     samples = [sample for sample in os.listdir(raw_input_dir) if not sample.startswith(".")]
     adata_objects = {}
@@ -164,6 +165,10 @@ for condition, samples in cond_dict.items():
     adata = mod.export_posterior(
         adata, sample_kwargs={'num_samples': 1000, 'batch_size': 2500, 'use_gpu': True}
     )
+    
+    # TODO: Should we save the model as well?
+    mod.save(str(tmp_out / "c2l_mod"), overwrite=True)
+    adata.write(tmp_out / "sc.h5ad")
 
     # export estimated expression in each cluster
     if 'means_per_cluster_mu_fg' in adata.varm.keys():

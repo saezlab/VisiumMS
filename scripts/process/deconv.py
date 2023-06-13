@@ -131,6 +131,10 @@ adata_vis = mod.export_posterior(
     adata_vis, sample_kwargs={'num_samples': 1000, 'batch_size': mod.adata.n_obs, 'use_gpu': True}
 )
 
+# TODO: Should we save the model as well?
+mod.save(str(tmp_out / "c2l_mod"), overwrite=True)
+adata_vis.write(tmp_out / "sp.h5ad")
+
 # Extract abundances df and rename cols to cell types
 cell_abunds = adata_vis.obsm['q05_cell_abundance_w_sf'].copy()
 cell_abunds.columns = adata_vis.uns['mod']['factor_names']

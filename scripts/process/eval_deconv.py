@@ -1,6 +1,6 @@
 
 # usage
-# gi
+# python scripts/process/eval_deconv.py
 
 import pandas as pd
 import numpy as np
@@ -60,22 +60,18 @@ def get_sc_proportions(meta):
     )
 
 
-def get_vis_proportions(model_call, method, sample_meta):
+def get_vis_proportions(model_call, method, sample_meta, measure):
     assert model_call in ["all", "condition", "lesion_type"]
     assert method in ["cellbender", "cellranger"]
+    assert measure in ["abunds", "props"]
     prop = []
-    sample_ids = []
     for sample_id in os.listdir(path_deconv / method):
         sample_entry = sample_meta.loc[sample_meta.sample_id == sample_id, :].to_dict(orient="records")[0]
         suffix = lookup(model_call, sample_entry)
-        if f"cell_props_{suffix}.csv" in os.listdir(path_deconv / method / sample_id):
-            sample_ids.append(sample_id)
-            tmp = AnnData(pd.read_csv(path_deconv / method / sample_id / f"cell_props_{suffix}.csv", index_col=0))
-            tmp.obs['sample_id'] = sample_id
-            prop.append(tmp)
-        else:
-            # raise Warning in the future, this should not happen!
-            print(f"Missing {sample_id}")
+        tmp = AnnData(X=pd.read_csv(path_deconv / method / sample_id / f"cell_{measure}_{suffix}.csv", index_col=0), dtype=np.float32)
+        tmp.obs['sample_id'] = sample_id
+        prop.append(tmp)
+
     prop = prop[0].concatenate(prop[1:])
 
     # Compute average props for visium
@@ -84,6 +80,9 @@ def get_vis_proportions(model_call, method, sample_meta):
     vm_df = vm_df.groupby('sample_id').mean(1)
     vm_df = vm_df.melt(value_vars=vm_df.columns, ignore_index=False).reset_index()
     vm_df = vm_df.rename({'variable': 'cell_types', 'value': 'vm'}, axis=1)
+    # normalize the vm column per sample_id
+    vm_df['vm'] /= vm_df.groupby('sample_id')['vm'].transform('sum')
+    #vm_df['vm'] /= vm_df['vm'].sum()
     return(vm_df)
 
 
@@ -161,7 +160,20 @@ sample_meta = pd.read_excel(current_folder / ".." / ".." / "data" / "Metadata_al
 
 sc_proportions = {method: get_sc_proportions(sc.read_h5ad(path_ann / f"annotated_{method}_mod.h5ad").obs) for method in ["cellbender", "cellranger"]}
 
-vis_proportions = {method: {model_call: get_vis_proportions(model_call, method, sample_meta) for model_call in ["all", "condition", "lesion_type"]} for method in ["cellbender", "cellranger"]}
+vis_proportions = {method: {model_call: get_vis_proportions(model_call, method, sample_meta, measure="abunds") for model_call in ["all", "condition", "lesion_type"]} for method in ["cellbender", "cellranger"]}
+
+# check how well the c2l proportions and normalized abundances correlate
+#props = get_vis_proportions("all", "cellranger", sample_meta, measure="props")
+#abunds = get_vis_proportions("all", "cellranger", sample_meta, measure="abunds")
+#fig, axs = plt.subplots(4, 6, figsize=(15, 10))
+#axs = axs.flatten()
+#for i, sample_id in enumerate(os.listdir(path_deconv / "cellranger")):
+#    sns.scatterplot(x=props.loc[props.sample_id==sample_id].vm, y=abunds.loc[abunds.sample_id==sample_id].vm, ax=axs[i])
+#    axs[i].plot([0, 1], [0, 1], transform=axs[i].transAxes, ls="--", c=".3")
+#    axs[i].set_xlabel("Proportions")
+#    axs[i].set_ylabel("Normalized Abundances")
+#    axs[i].set_title(sample_id)
+#    plt.title(sample_id)
 
 # get sample_ids for which we have both sc and visium data
 samples_oi = set(list(sc_proportions.values())[0].sample_id) & set(list(list(vis_proportions.values())[0].values())[0].sample_id)

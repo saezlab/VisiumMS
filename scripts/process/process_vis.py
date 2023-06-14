@@ -7,11 +7,13 @@ import numpy as np
 import os
 import scanpy as sc
 from pathlib import Path
+import re
 
 from umap import UMAP
 import matplotlib.pyplot as plt
 import seaborn as sns
 import decoupler as dc
+from composition_stats import closure, ilr
 
 # see deconv.py
 def lookup(model_call, sample_entry):
@@ -80,6 +82,11 @@ def read_slide(sample_id, visium_path, c2l_path):
             inter = slide.obs.index.intersection(m.index)
             slide.obsm[f"{output}_{model_call}"] = m.loc[inter]
 
+            # adding the ilr transform, NOTE: closure ensures that all rows add up to 1, but this should be the case anyways
+            if output == "props":
+                slide.obsm[f"{output}_{model_call}"].loc[:, :] = closure(slide.obsm[f"{output}_{model_call}"].values)
+                slide.obsm[f"{output}_{model_call}_ilr"] = ilr(slide.obsm[f"{output}_{model_call}"].values)
+
     # Read image features
     adata_img = sc.read_h5ad(img_features / f"{sample_id}.h5ad")
     for feature in ["summary", "histogram", "texture"]:
@@ -91,6 +98,24 @@ def read_slide(sample_id, visium_path, c2l_path):
 
 # load the visium data
 vis_dict = {s: read_slide(s, visium_path, c2l_path) for s in visium_samples}
+
+# also common leiden clustering to evaluate the image results
+vis_all = sc.AnnData.concatenate(*vis_dict.values(), batch_key="sample_id", batch_categories=visium_samples)
+sc.pp.highly_variable_genes(vis_all, n_top_genes=2000)
+sc.pp.scale(vis_all, max_value=10)
+sc.pp.pca(vis_all, n_comps=40)
+sc.external.pp.bbknn(vis_all, batch_key='sample_id') 
+sc.pp.neighbors(vis_all, n_neighbors=10, n_pcs=40)
+sc.tl.leiden(vis_all, resolution=0.5, key_added="leiden_0.50")
+sc.tl.leiden(vis_all, resolution=0.25, key_added="leiden_0.25")
+sc.tl.leiden(vis_all, resolution=0.1, key_added="leiden_0.10")
+
+for sample_id in vis_dict.keys():
+    df = vis_all.obs[vis_all.obs.sample_id == sample_id].copy()
+    df.index = [re.sub(f"-{sample_id}$", "", i) for i in df.index]
+    for res in ["leiden_0.50", "leiden_0.25", "leiden_0.10"]:
+        vis_dict[sample_id].obs[res] = df.loc[vis_dict[sample_id].obs.index][res]
+del vis_all
 
 # get pathways
 msigdb = dc.get_resource('MSigDB')

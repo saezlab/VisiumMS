@@ -1,11 +1,11 @@
 
 # usage examples
-# python scripts/process/deconv_submit.py --output cellbender --model all --recompute False
-# python scripts/process/deconv_submit.py --output cellbender --model condition --recompute False
-# python scripts/process/deconv_submit.py --output cellbender --model lesion_type --recompute False
-# python scripts/process/deconv_submit.py --output cellranger --model all --recompute False
-# python scripts/process/deconv_submit.py --output cellranger --model condition --recompute False
-# python scripts/process/deconv_submit.py --output cellranger --model lesion_type --recompute False
+# python scripts/process/deconv_submit.py --output cellbender --model all --recompute False  --partition gpu
+# python scripts/process/deconv_submit.py --output cellbender --model condition --recompute False --partition gpu
+# python scripts/process/deconv_submit.py --output cellbender --model lesion_type --recompute False --partition gpu
+# python scripts/process/deconv_submit.py --output cellranger --model all --recompute False --partition gpu
+# python scripts/process/deconv_submit.py --output cellranger --model condition --recompute False --partition gpu
+# python scripts/process/deconv_submit.py --output cellranger --model lesion_type --recompute False --partition gpu
 
 import os
 from pathlib import Path
@@ -18,21 +18,25 @@ parser.add_argument("--model", type=str, required=True, help="['all', 'condition
 parser.add_argument("--n_cells_spot", type=int, required=False, default=5, help="prior for number of cells per spot")
 parser.add_argument("--d_alpha", type=int, required=False, default=20, help="prior for heterogeneity?")
 parser.add_argument("--recompute", type=str, required=False, default="False", help="")
+parser.add_argument("--partition", type=str, required=False, default="gpu", help="")
 args = parser.parse_args()
 
 # check the arguments
 if args.output not in ['cellbender', 'cellranger']:
-    raise ValueError("Model must be in ['cellbender', 'cellranger']'")
+    raise ValueError("uutput must be in ['cellbender', 'cellranger']'")
 if args.model not in ['all', 'condition', 'lesion_type']:
-    raise ValueError("Model must be in ['all', 'condition', 'lesion_type']")
+    raise ValueError("model must be in ['all', 'condition', 'lesion_type']")
 if args.recompute not in ["True", "true", "False", "false"]:
-    raise ValueError("Recompute must be in ['True', 'true', 'False', 'false']")
+    raise ValueError("recompute must be in ['True', 'true', 'False', 'false']")
+if args.partition not in ["gpu", "gpusaez"]:
+    raise ValueError("partition must be in ['gpu', 'gpusaez']'")
 
 output = args.output
 reg_model = args.model
 n_cells_spot = args.n_cells_spot
 d_alpha = args.d_alpha
 recompute = args.recompute in ["True", "true"]
+partition = args.partition
 
 current_folder = Path(__file__).parent
 visium_dir = current_folder / ".." / ".." / "data" / "raw" / "vis"
@@ -57,6 +61,6 @@ N_CPU = "4"
 for sample in samples:
     print("submitting job for sample: ", sample)
     log_file = log_dir / f"$(date +'%Y-%m-%d-%H-%M')-{sample}-%j.log"
-    command = f"sbatch --output={log_file} --partition=gpu --nodes=1 --ntasks-per-node={N_CPU} --gres=gpu:1 --time={TIME} --mem={MEM_GB}G --export=OUTPUT={output},REG_MODEL={reg_model},SAMPLE={sample},N_CELLS_SPOT={n_cells_spot},D_ALPHA={d_alpha},RECOMPUTE={recompute} {script}"
+    command = f"sbatch --output={log_file} --partition={partition} --nodes=1 --ntasks-per-node={N_CPU} --gres=gpu:1 --time={TIME} --mem={MEM_GB}G --export=OUTPUT={output},REG_MODEL={reg_model},SAMPLE={sample},N_CELLS_SPOT={n_cells_spot},D_ALPHA={d_alpha},RECOMPUTE={recompute} {script}"
     print(command)
     os.system(command)

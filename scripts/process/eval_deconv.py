@@ -2,6 +2,9 @@
 # usage
 # python scripts/process/eval_deconv.py
 
+# TODO:
+# repeat evaluation using the posterior means instead of the 5% quantile
+
 import pandas as pd
 import numpy as np
 import scanpy as sc
@@ -80,9 +83,7 @@ def get_vis_proportions(model_call, method, sample_meta, measure):
     vm_df = vm_df.groupby('sample_id').mean(1)
     vm_df = vm_df.melt(value_vars=vm_df.columns, ignore_index=False).reset_index()
     vm_df = vm_df.rename({'variable': 'cell_types', 'value': 'vm'}, axis=1)
-    # normalize the vm column per sample_id
-    vm_df['vm'] /= vm_df.groupby('sample_id')['vm'].transform('sum')
-    #vm_df['vm'] /= vm_df['vm'].sum()
+    vm_df['vm'] /= vm_df.groupby('sample_id')['vm'].transform('sum') # normalize the vm column per sample_id
     return(vm_df)
 
 
@@ -158,7 +159,11 @@ output_path.mkdir(parents=True, exist_ok=True)
 
 sample_meta = pd.read_excel(current_folder / ".." / ".." / "data" / "Metadata_all.xlsx", sheet_name="Visium")
 
-sc_proportions = {method: get_sc_proportions(sc.read_h5ad(path_ann / f"annotated_{method}_mod.h5ad").obs) for method in ["cellbender", "cellranger"]}
+sc_proportions = {
+    "cellbender": get_sc_proportions(sc.read_h5ad(path_ann / f"annotated_cellbender_mod.h5ad").obs),
+    "cellranger": get_sc_proportions(sc.read_h5ad(path_ann / f"annotated_cellranger.h5ad").obs)
+}
+#sc_proportions = {method: get_sc_proportions(sc.read_h5ad(path_ann / f"annotated_{method}_mod.h5ad").obs) for method in ["cellbender", "cellranger"]}
 
 vis_proportions = {method: {model_call: get_vis_proportions(model_call, method, sample_meta, measure="abunds") for model_call in ["all", "condition", "lesion_type"]} for method in ["cellbender", "cellranger"]}
 

@@ -8,10 +8,8 @@ Script to generate a regression model for cell2location from raw sn-seq data
 
 import sys
 import scanpy as sc
-import anndata
 import pandas as pd
 import numpy as np
-from numpy.random import default_rng
 import os
 import matplotlib.pyplot as plt
 from pathlib import Path

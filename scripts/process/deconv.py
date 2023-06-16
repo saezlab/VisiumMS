@@ -131,18 +131,14 @@ adata_vis = mod.export_posterior(
     adata_vis, sample_kwargs={'num_samples': 1000, 'batch_size': mod.adata.n_obs, 'use_gpu': True}
 )
 
-# TODO: Should we save the model as well?
-mod.save(str(tmp_out / "c2l_mod"), overwrite=True)
-adata_vis.write(tmp_out / "sp.h5ad")
+# Save the model for future inspection
+mod.save(str(tmp_out / f"c2l_mod_{reg_model}"), overwrite=True)
+adata_vis.write(tmp_out / f"sp_{reg_model}.h5ad")
 
-# Extract abundances df and rename cols to cell types
-# TODO: Why do we take the 5% quantile of the posterior?
-cell_abunds = adata_vis.obsm['q05_cell_abundance_w_sf'].copy()
-cell_abunds.columns = adata_vis.uns['mod']['factor_names']
-
-# Compute proportions
-cell_props = cell_abunds / np.sum(cell_abunds, axis=1).values.reshape(-1, 1)
-
-# Store results
-cell_abunds.to_csv(tmp_out / ("cell_abunds_" + reg_model + ".csv"))
-cell_props.to_csv(tmp_out / ("cell_props_" + reg_model + ".csv"))
+# Save the results for 5% quantile, mean, and 95% quantile
+# NOTE: Why do we take the 5% quantile of the posterior?
+# NOTE: We are not computing the proportion here anymore, because we can do that downstream
+for point_estimates in ["q05_cell_abundance_w_sf", "means_cell_abundance_w_sf", "q95_cell_abundance_w_sf"]:
+    cell_abunds = adata_vis.obsm[point_estimates].copy()
+    cell_abunds.columns = adata_vis.uns['mod']['factor_names']
+    cell_abunds.to_csv(tmp_out / f"cell_abunds_{reg_model}_{point_estimates}.csv")

@@ -69,7 +69,7 @@ vis_dict = {smp: sc.read_h5ad(visium_path / f"{smp}.h5ad") for smp in visium_sam
 print(visium_samples[0])
 print(f"Adata object for first visium sample:\n{vis_dict[visium_samples[0]]}")
 print(f"Available obsm layers:\n{vis_dict[visium_samples[0]].obsm_keys()}")
-#obsm_features = {obsm_key: vis_dict[visium_samples[0]].obsm[obsm_key].columns.to_list() for obsm_key in obsm_to_use}
+obsm_features = {obsm_key: vis_dict[visium_samples[0]].obsm[obsm_key].columns.to_list() for obsm_key in obsm_to_use}
 
 # get cell metadata
 meta_list = []
@@ -161,7 +161,7 @@ for obsm_key in obsm_to_use:
 adata.write(out_dir / "adata.h5ad")
 
 # check umaps
-sc.pl.umap(adata, color=["sample_id", "condition", "leiden"], ncols=1, save="_umap.pdf")
+sc.pl.umap(adata, color=["sample_id", "condition", "leiden"], ncols=1, save=".pdf", show=False)
 
 # count the cluster fractions per condition, divide by the rowsums
 df = adata.obs.groupby(["condition", "leiden"]).size().unstack()
@@ -192,15 +192,15 @@ for obsm_key in obsm_to_use:
 
 # compute feature loadings per factor
 for obsm_key in obsm_to_use:
+    features = obsm_features[obsm_key]
     fig, ax = plt.subplots(1, 1, figsize=(6, 10))
-    sns.heatmap(model.get_weights(df=True).loc[obsm_key, :], ax=ax, cmap="coolwarm", center=0)
+    sns.heatmap(model.get_weights(df=True).loc[features, :], ax=ax, cmap="coolwarm", center=0)
+    fig.tight_layout()
     fig.savefig(plot_dir / f"feature_loadings_{obsm_key}.pdf")
 
 # check the fraction of variance explained per group per factor per view
 fig = mfx.plot.plot_r2(model, y="Group", x="Factor")
 fig.savefig(plot_dir / "r2_per_group_per_factor_per_view.pdf")
-
-
 
 # TODO:
 # - testing

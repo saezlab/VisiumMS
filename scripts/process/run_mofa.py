@@ -1,6 +1,22 @@
 
 # usage
 # python scripts/process/run_mofa.py --model all --ct_metric abunds --image_features None --n_factors 10
+# python scripts/process/run_mofa.py --model all --ct_metric props_ilr --image_features None --n_factors 10
+
+# bash loop
+#for model in all condition; do
+#    for ct_metric in abunds props_ilr; do
+#        for image_features in None histogram summary texture; do
+#            for n_factors in 5 10; do
+#                python scripts/process/run_mofa.py --model $model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors
+#            done
+#        done
+#    done
+#done
+
+# resources
+# MOFApy: https://github.com/bioFAM/mofapy2/blob/master/mofapy2/notebooks/getting_started_python.ipynb
+# mofax: https://github.com/bioFAM/mofax/blob/master/notebooks/getting_started_pbmc10k.ipynb
 
 from mofapy2.run.entry_point import entry_point
 import pandas as pd
@@ -39,7 +55,7 @@ if args.image_features != "None":
 if args.ct_metric in ["abunds", "props"]:
     obsm_to_use.append(f"{args.ct_metric}_{args.model}")
 elif args.ct_metric == "props_ilr":
-    obsm_to_use.append(f"{args.ct_metric}_{args.model}_ilr")
+    obsm_to_use.append(f"props_{args.model}_ilr")
 
 print(f"Using the following views: {obsm_to_use}")
 
@@ -64,6 +80,16 @@ sample_meta = pd.read_excel(current_path / ".." / ".." / "data" / "Metadata_all.
 
 # load the visium data
 vis_dict = {smp: sc.read_h5ad(visium_path / f"{smp}.h5ad") for smp in visium_samples}
+
+# TODO: temporary fix to put the ilr transformed data into a dataframe
+# NOTE: It is important that the column names do not resemble integers otherwise there are hd5 errors when saving the MOFA model
+for values in vis_dict.values():
+    values.obsm["props_all_ilr"] = pd.DataFrame(values.obsm["props_all_ilr"], index=values.obs.index, 
+                                                columns=["irl_" + str(s) for s in list(range(values.obsm["props_all_ilr"].shape[1]))])
+    values.obsm["props_condition_ilr"] = pd.DataFrame(values.obsm["props_condition_ilr"], index=values.obs.index, 
+                                                      columns=["irl_" + str(s) for s in list(range(values.obsm["props_condition_ilr"].shape[1]))])
+    values.obsm["props_lesion_type_ilr"] = pd.DataFrame(values.obsm["props_lesion_type_ilr"], index=values.obs.index, 
+                                                        columns=["irl_" + str(s) for s in list(range(values.obsm["props_lesion_type_ilr"].shape[1]))])
 
 # checks
 print(visium_samples[0])
@@ -109,7 +135,7 @@ ent.set_data_df(data_dt, likelihoods = ["gaussian" for _ in range(len(obsm_to_us
 
 # set the model options
 ent.set_model_options(
-    factors = 10, 
+    factors = args.n_factors,
     spikeslab_weights = True, 
     ard_weights = True
 )
@@ -175,7 +201,6 @@ fig.savefig(plot_dir / "cluster_fractions_heatmap.pdf")
 
 # compute mean feature per leiden and plot
 for obsm_key in obsm_to_use:
-    obsm_key = "abunds_all"
     df = adata.obsm[obsm_key].copy()
     df["leiden"] = adata.obs.leiden.values
     df["condition"] = adata.obs.condition.values
@@ -183,7 +208,7 @@ for obsm_key in obsm_to_use:
     df = df.melt(id_vars=["cell", "leiden", "condition"], var_name="feature", value_name="value")
 
     # compute mean feature per leiden and plot
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(6, 10))
     sns.barplot(data=df, x="value", y="feature", hue="leiden", ax=ax)
     ax.set_ylabel("Feature")
     ax.set_xlabel("Mean feature value")
@@ -193,13 +218,14 @@ for obsm_key in obsm_to_use:
 # compute feature loadings per factor
 for obsm_key in obsm_to_use:
     features = obsm_features[obsm_key]
-    fig, ax = plt.subplots(1, 1, figsize=(6, 10))
+    fig, ax = plt.subplots(figsize=(6, 10))
     sns.heatmap(model.get_weights(df=True).loc[features, :], ax=ax, cmap="coolwarm", center=0)
     fig.tight_layout()
     fig.savefig(plot_dir / f"feature_loadings_{obsm_key}.pdf")
 
 # check the fraction of variance explained per group per factor per view
 fig = mfx.plot.plot_r2(model, y="Group", x="Factor")
+fig.tight_layout()
 fig.savefig(plot_dir / "r2_per_group_per_factor_per_view.pdf")
 
 # TODO:

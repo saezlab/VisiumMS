@@ -1,11 +1,11 @@
 
 # usage examples
-# python scripts/process/deconv_submit.py --output cellbender --model all --recompute False  --partition gpu
-# python scripts/process/deconv_submit.py --output cellbender --model condition --recompute False --partition gpu
-# python scripts/process/deconv_submit.py --output cellbender --model lesion_type --recompute False --partition gpu
-# python scripts/process/deconv_submit.py --output cellranger --model all --recompute False --partition gpu
-# python scripts/process/deconv_submit.py --output cellranger --model condition --recompute False --partition gpu
-# python scripts/process/deconv_submit.py --output cellranger --model lesion_type --recompute False --partition gpu
+# python scripts/process/deconv_submit.py --output cellbender --model all --recompute True  --partition gpusaez
+# python scripts/process/deconv_submit.py --output cellbender --model condition --recompute True --partition gpusaez
+# python scripts/process/deconv_submit.py --output cellbender --model lesion_type --recompute True --partition gpusaez
+# python scripts/process/deconv_submit.py --output cellranger --model all --recompute True --partition gpusaez
+# python scripts/process/deconv_submit.py --output cellranger --model condition --recompute True --partition gpusaez
+# python scripts/process/deconv_submit.py --output cellranger --model lesion_type --recompute True --partition gpusaez
 
 import os
 from pathlib import Path

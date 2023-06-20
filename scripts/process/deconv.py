@@ -90,7 +90,7 @@ c2l_out.mkdir(parents=True, exist_ok=True)
 tmp_out = c2l_out / sample
 tmp_out.mkdir(parents=True, exist_ok=True)
 
-# TODO: Change the second if clause in the new script! -> verbose output
+# TODO: Adjust to new save format
 if (not recompute) and (tmp_out / f"cell_abunds_{reg_model}.csv").exists() and (tmp_out / f"cell_props_{reg_model}.csv").exists():
     print("Found existing results for sample", sample, "skipping")
     sys.exit()

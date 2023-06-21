@@ -8,7 +8,7 @@
 #    for ct_metric in abunds props_ilr; do
 #        for image_features in None histogram summary texture; do
 #            for n_factors in 5 10; do
-#                python scripts/process/run_mofa.py --model $model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors
+#                python scripts/process/run_mofa.py --model $model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
 #            done
 #        done
 #    done
@@ -39,12 +39,15 @@ parser.add_argument("--model", type=str, required=True, help="['all', 'condition
 parser.add_argument("--ct_metric", type=str, required=True, help="['abunds', 'props', 'props_ilr']")
 parser.add_argument("--image_features", type=str, required=True, help="['None', 'histogram', 'summary', 'texture']")
 parser.add_argument("--n_factors", type=int, required=True)
+parser.add_argument("--recompute", type=str, required=False, default="False")
 
 # parse arguments and check
 args = parser.parse_args()
 assert args.model in ["all", "condition", "lesion_type"]
 assert args.ct_metric in ["abunds", "props", "props_ilr"]
 assert args.image_features in ["None", "histogram", "summary", "texture"]
+assert args.recompute in ["True", "true", "False", "false"]
+args.recompute = args.recompute in ["True", "true"]
 
 # command line arguments, NOTE: hallmarks are always used
 obsm_to_use = ["hallmark_estimates"]
@@ -70,6 +73,11 @@ sc.settings.figdir = str(plot_dir)
 out_dir.mkdir(parents=True, exist_ok=True)
 plot_dir.mkdir(parents=True, exist_ok=True) 
 visium_path = current_path / ".." / ".." / "data" / "prc" / "vis" / "processed"
+
+# check for recompute
+if (out_dir / "mofa_model.hdf5").exists() and (not args.recompute):
+    print(f"MOFA model for {out_dir} already exists, skipping...")
+    exit()
 
 # get visium samples
 visium_samples = [f.split(".")[0] for f in os.listdir(visium_path) if not f.startswith(".")]
@@ -170,9 +178,11 @@ adata = sc.AnnData(X=model.get_factors())
 adata.obs = model.get_cells()
 adata.obs.set_index("cell", inplace=True)
 sc.pp.neighbors(adata, n_neighbors=15, use_rep="X")
-sc.tl.leiden(adata, resolution=0.5)
+resolutions = [0.2, 0.3, 0.4, 0.5, 0.6]
+for res in resolutions:
+    sc.tl.leiden(adata, resolution=res, key_added=f"leiden_{res}")
 adata.obs.rename(columns={"group": "sample_id"}, inplace=True)
-adata.obs["condition"] = ["MS" if s.startswith("MS") else "Control" for s in adata.obs.sample_id]
+adata.obs = adata.obs.join(sample_meta.set_index("sample_id"), on="sample_id")
 sc.tl.umap(adata)
 
 for obsm_key in obsm_to_use:
@@ -187,33 +197,62 @@ for obsm_key in obsm_to_use:
 adata.write(out_dir / "adata.h5ad")
 
 # check umaps
-sc.pl.umap(adata, color=["sample_id", "condition", "leiden"], ncols=1, save=".pdf", show=False)
+sc.pl.umap(adata, color=["sample_id", "Condition", "leiden_0.5"], ncols=1, save=".pdf", show=False)
+
+# count the cluster fractions per sample, divide by the rowsums
+for res in resolutions:
+    df = adata.obs.groupby(["sample_id", f"leiden_{res}"]).size().unstack()
+    df = df.div(df.sum(axis=1), axis=0)
+    fig, ax = plt.subplots(figsize=(12, 8))
+    sns.heatmap(df, cmap="viridis", annot=True, fmt=".2f", ax=ax)
+    ax.set_xlabel("Cluster")
+    ax.set_ylabel("Sample ID")
+    fig.tight_layout()
+    fig.suptitle(f"Cluster fractions per sample (resolution {res})")
+    fig.savefig(plot_dir / f"cluster_fractions_per_sample_heatmap_res_{res}.pdf")
+
+# count the cluster fractions per lesion type, divide by the rowsums
+for res in resolutions:
+    df = adata.obs.groupby(["lesion_type", f"leiden_{res}"]).size().unstack()
+    df = df.div(df.sum(axis=1), axis=0)
+    fig, ax = plt.subplots(figsize=(12, 4))
+    sns.heatmap(df, cmap="viridis", annot=True, fmt=".2f", ax=ax)
+    ax.set_xlabel("Cluster")
+    ax.set_ylabel("Lesion Type")
+    fig.tight_layout()
+    fig.suptitle(f"Cluster fractions per lesion type (resolution {res})")
+    fig.savefig(plot_dir / f"cluster_fractions_per_lesion_type_heatmap_res_{res}.pdf")
 
 # count the cluster fractions per condition, divide by the rowsums
-df = adata.obs.groupby(["condition", "leiden"]).size().unstack()
-df = df.div(df.sum(axis=1), axis=0)
-fig, ax = plt.subplots(figsize=(6, 2))
-sns.heatmap(df, cmap="viridis", annot=True, fmt=".2f", ax=ax)
-ax.set_xlabel("Cluster")
-ax.set_ylabel("Condition")
-fig.tight_layout()
-fig.savefig(plot_dir / "cluster_fractions_heatmap.pdf")
+for res in resolutions:
+    df = adata.obs.groupby(["Condition", f"leiden_{res}"]).size().unstack()
+    df = df.div(df.sum(axis=1), axis=0)
+    fig, ax = plt.subplots(figsize=(12, 2))
+    sns.heatmap(df, cmap="viridis", annot=True, fmt=".2f", ax=ax)
+    ax.set_xlabel("Cluster")
+    ax.set_ylabel("Condition")
+    fig.tight_layout()
+    fig.suptitle(f"Cluster fractions per condition (resolution {res})")
+    fig.savefig(plot_dir / f"cluster_fractions_per_condition_heatmap_res_{res}.pdf")
 
-# compute mean feature per leiden and plot
+# compute average features per cluster
 for obsm_key in obsm_to_use:
     df = adata.obsm[obsm_key].copy()
-    df["leiden"] = adata.obs.leiden.values
-    df["condition"] = adata.obs.condition.values
+    meta_keys = ["sample_id", "Condition", "lesion_type"] + ["leiden_" + str(res) for res in resolutions]
+    df = df.join(adata.obs[meta_keys], on="cell")
     df.reset_index(inplace=True)
-    df = df.melt(id_vars=["cell", "leiden", "condition"], var_name="feature", value_name="value")
-
-    # compute mean feature per leiden and plot
-    fig, ax = plt.subplots(figsize=(6, 10))
-    sns.barplot(data=df, x="value", y="feature", hue="leiden", ax=ax)
-    ax.set_ylabel("Feature")
-    ax.set_xlabel("Mean feature value")
-    fig.tight_layout()
-    fig.savefig(plot_dir / f"mean_feature_per_leiden_{obsm_key}.pdf")
+    df = df.melt(id_vars=["cell"]+meta_keys, var_name="feature", value_name="value")
+    for res in resolutions:
+        df_tmp = df.groupby(["feature", f"leiden_{res}"]).mean().reset_index()
+        df_tmp["min_max_value"] = df_tmp.groupby(["feature"]).value.apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+        fig, ax = plt.subplots(1, 2, figsize=(24, 12))
+        sns.heatmap(data=df_tmp.pivot(index="feature", columns=f"leiden_{res}", values="value"), 
+                    cmap="viridis", ax=ax[0])
+        sns.heatmap(data=df_tmp.pivot(index="feature", columns=f"leiden_{res}", values="min_max_value"), 
+                cmap="viridis", ax=ax[1])
+        ax[0].set_title("Raw values")
+        ax[1].set_title("Min-max scaled values per feature")
+        fig.savefig(plot_dir / f"feature_heatmap_{obsm_key}_res_{res}.pdf")
 
 # compute feature loadings per factor
 for obsm_key in obsm_to_use:
@@ -228,5 +267,3 @@ fig = mfx.plot.plot_r2(model, y="Group", x="Factor")
 fig.tight_layout()
 fig.savefig(plot_dir / "r2_per_group_per_factor_per_view.pdf")
 
-# TODO:
-# - testing

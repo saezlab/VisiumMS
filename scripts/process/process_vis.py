@@ -1,6 +1,7 @@
 
 # usage
-# python scripts/process/process_vis.py
+# python scripts/process/process_vis.py --output cellbender
+# python scripts/process/process_vis.py --output cellranger
 
 import pandas as pd
 import numpy as np
@@ -14,6 +15,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import decoupler as dc
 from composition_stats import closure, ilr
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--output", type=str, required=True)
+args = parser.parse_args()
 
 # see deconv.py
 def lookup(model_call, sample_entry):
@@ -42,17 +48,23 @@ def lookup(model_call, sample_entry):
     return reg_model
 
 current_path = Path(__file__).parent
-out_file = current_path / ".." / ".." / "data" / "prc" / "vis" / "processed"
-out_file.mkdir(parents=True, exist_ok=True)
 visium_path = current_path / ".." / ".." / "data" / "raw" / "vis"
-c2l_path = current_path / ".." / ".." / "data" / "prc" / "vis" / "c2l_out" / "cellranger"
 img_features = current_path / ".." / ".." / "data" / "prc" / "images" / "squdipy_features"
 visium_samples = [f for f in os.listdir(visium_path) if not f.startswith(".")]
 print(np.array(visium_samples))
 
-sample_meta = pd.read_excel(current_path / ".." / ".." / "data" / "Metadata_all.xlsx", sheet_name="Visium")
-sample_meta
+if args.output == "cellbender":
+    c2l_path = current_path / ".." / ".." / "data" / "prc" / "vis" / "c2l_out" / "cellbender"
+    out_file = current_path / ".." / ".." / "data" / "prc" / "vis" / "processed" / "cellbender"
+    out_file.mkdir(parents=True, exist_ok=True)
+elif args.output == "cellranger":
+    c2l_path = current_path / ".." / ".." / "data" / "prc" / "vis" / "c2l_out" / "cellranger"
+    out_file = current_path / ".." / ".." / "data" / "prc" / "vis" / "processed" / "cellranger"
+    out_file.mkdir(parents=True, exist_ok=True)
+else:
+    raise ValueError("Unknown output")
 
+sample_meta = pd.read_excel(current_path / ".." / ".." / "data" / "Metadata_all.xlsx", sheet_name="Visium")
 
 def read_slide(sample_id, visium_path, c2l_path):
 
@@ -75,17 +87,17 @@ def read_slide(sample_id, visium_path, c2l_path):
     sc.pp.log1p(slide)
 
     # Read props and abunds
-    for model_call in ["all", "condition", "lesion_type"]:
+    # NOTE: need to rerun condition c2l models for cellranger
+    #for model_call in ["all", "condition"]:
+    for model_call in ["all"]:
         suffix = lookup(model_call, sample_entry)
-        for output in ["abunds", "props"]:
-            m = pd.read_csv(c2l_path / sample_id / f"cell_{output}_{suffix}.csv", index_col=0)
-            inter = slide.obs.index.intersection(m.index)
-            slide.obsm[f"{output}_{model_call}"] = m.loc[inter]
-
-            # adding the ilr transform, NOTE: closure ensures that all rows add up to 1, but this should be the case anyways
-            if output == "props":
-                slide.obsm[f"{output}_{model_call}"].loc[:, :] = closure(slide.obsm[f"{output}_{model_call}"].values)
-                slide.obsm[f"{output}_{model_call}_ilr"] = ilr(slide.obsm[f"{output}_{model_call}"].values)
+        m = pd.read_csv(c2l_path / sample_id / f"cell_abunds_{suffix}_q05_cell_abundance_w_sf.csv", index_col=0)
+        inter = slide.obs.index.intersection(m.index)
+        slide.obsm[f"abunds_{model_call}"] = m.loc[inter]
+        # check this gives us proportions
+        slide.obsm[f"props_{model_call}"] = slide.obsm[f"abunds_{model_call}"].div(slide.obsm[f"abunds_{model_call}"].sum(axis=1), axis=0)
+        slide.obsm[f"props_{model_call}"].loc[:, :] = closure(slide.obsm[f"props_{model_call}"].values)
+        slide.obsm[f"props_ilr_{model_call}"] = ilr(slide.obsm[f"props_{model_call}"].values)
 
     # Read image features
     adata_img = sc.read_h5ad(img_features / f"{sample_id}.h5ad")

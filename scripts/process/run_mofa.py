@@ -1,15 +1,24 @@
 
 # usage
-# python scripts/process/run_mofa.py --model all --ct_metric abunds --image_features None --n_factors 10
-# python scripts/process/run_mofa.py --model all --ct_metric props_ilr --image_features None --n_factors 10
+# python scripts/process/run_mofa.py --output cellranger --model all --ct_metric abunds --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellranger --model all --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
 
 # bash loop
 #for model in all condition; do
 #    for ct_metric in abunds props_ilr; do
 #        for image_features in None histogram summary texture; do
 #            for n_factors in 5 10; do
-#                python scripts/process/run_mofa.py --model $model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
+#                python scripts/process/run_mofa.py --output cellranger --model $model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
 #            done
+#        done
+#    done
+#done
+
+# bash loop for model=all
+#for ct_metric in abunds props_ilr; do
+#    for image_features in None histogram summary texture; do
+#        for n_factors in 5 10; do
+#            python scripts/process/run_mofa.py --output cellranger --model all --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
 #        done
 #    done
 #done
@@ -26,7 +35,9 @@ import scanpy as sc
 import mofax as mfx
 from pathlib import Path
 
+from sklearn.decomposition import PCA
 from umap import UMAP
+from composition_stats import closure, ilr
 import matplotlib.pyplot as plt
 import seaborn as sns
 import decoupler as dc
@@ -35,6 +46,7 @@ import argparse
 
 # get cmd line arguments
 parser = argparse.ArgumentParser()
+parser.add_argument("--output", type=str, required=True, help="['cellbender', 'cellranger']")
 parser.add_argument("--model", type=str, required=True, help="['all', 'condition', 'lesion_type']")
 parser.add_argument("--ct_metric", type=str, required=True, help="['abunds', 'props', 'props_ilr']")
 parser.add_argument("--image_features", type=str, required=True, help="['None', 'histogram', 'summary', 'texture']")
@@ -43,6 +55,7 @@ parser.add_argument("--recompute", type=str, required=False, default="False")
 
 # parse arguments and check
 args = parser.parse_args()
+assert args.output in ["cellranger", "cellbender"]
 assert args.model in ["all", "condition", "lesion_type"]
 assert args.ct_metric in ["abunds", "props", "props_ilr"]
 assert args.image_features in ["None", "histogram", "summary", "texture"]
@@ -55,10 +68,12 @@ obsm_to_use = ["hallmark_estimates"]
 if args.image_features != "None":
     obsm_to_use.append(args.image_features)
 
-if args.ct_metric in ["abunds", "props"]:
-    obsm_to_use.append(f"{args.ct_metric}_{args.model}")
-elif args.ct_metric == "props_ilr":
-    obsm_to_use.append(f"props_{args.model}_ilr")
+#if args.ct_metric in ["abunds", "props"]:
+#    obsm_to_use.append(f"{args.ct_metric}_{args.model}")
+#elif args.ct_metric == "props_ilr":
+#    obsm_to_use.append(f"props_{args.model}_ilr")
+# NOTE: I fixed the above in the process_vis.py code
+obsm_to_use.append(f"{args.ct_metric}_{args.model}")
 
 print(f"Using the following views: {obsm_to_use}")
 
@@ -67,12 +82,12 @@ ent = entry_point()
 
 # set the paths
 current_path = Path(__file__).parent
-out_dir = current_path / ".." / ".." / "data" / "prc" / "vis" / "mofa_tests" / f"{args.model}__{args.ct_metric}__{args.image_features}__{str(args.n_factors)}"
+out_dir = current_path / ".." / ".." / "data" / "prc" / "vis" / "mofa_tests" / args.output/ f"{args.model}__{args.ct_metric}__{args.image_features}__{str(args.n_factors)}"
 plot_dir = out_dir / "plots"
 sc.settings.figdir = str(plot_dir)
 out_dir.mkdir(parents=True, exist_ok=True)
 plot_dir.mkdir(parents=True, exist_ok=True) 
-visium_path = current_path / ".." / ".." / "data" / "prc" / "vis" / "processed"
+visium_path = current_path / ".." / ".." / "data" / "prc" / "vis" / "processed" / args.output
 
 # check for recompute
 if (out_dir / "mofa_model.hdf5").exists() and (not args.recompute):
@@ -92,12 +107,12 @@ vis_dict = {smp: sc.read_h5ad(visium_path / f"{smp}.h5ad") for smp in visium_sam
 # TODO: temporary fix to put the ilr transformed data into a dataframe
 # NOTE: It is important that the column names do not resemble integers otherwise there are hd5 errors when saving the MOFA model
 for values in vis_dict.values():
-    values.obsm["props_all_ilr"] = pd.DataFrame(values.obsm["props_all_ilr"], index=values.obs.index, 
-                                                columns=["irl_" + str(s) for s in list(range(values.obsm["props_all_ilr"].shape[1]))])
-    values.obsm["props_condition_ilr"] = pd.DataFrame(values.obsm["props_condition_ilr"], index=values.obs.index, 
-                                                      columns=["irl_" + str(s) for s in list(range(values.obsm["props_condition_ilr"].shape[1]))])
-    values.obsm["props_lesion_type_ilr"] = pd.DataFrame(values.obsm["props_lesion_type_ilr"], index=values.obs.index, 
-                                                        columns=["irl_" + str(s) for s in list(range(values.obsm["props_lesion_type_ilr"].shape[1]))])
+    values.obsm["props_ilr_all"] = pd.DataFrame(values.obsm["props_ilr_all"], index=values.obs.index, 
+                                                columns=["irl_" + str(s) for s in list(range(values.obsm["props_ilr_all"].shape[1]))])
+    #values.obsm["props_ilr_condition] = pd.DataFrame(values.obsm["props_ilr_condition"], index=values.obs.index, 
+    #                                                  columns=["irl_" + str(s) for s in list(range(values.obsm["props_ilr_condition"].shape[1]))])
+    #values.obsm["props_ilr_lesion_type"] = pd.DataFrame(values.obsm["props_ilr_lesion_type"], index=values.obs.index, 
+    #                                                    columns=["irl_" + str(s) for s in list(range(values.obsm["props_ilr_lesion_type"].shape[1]))])
 
 # checks
 print(visium_samples[0])
@@ -198,6 +213,45 @@ adata.write(out_dir / "adata.h5ad")
 
 # check umaps
 sc.pl.umap(adata, color=["sample_id", "Condition", "leiden_0.5"], ncols=1, save=".pdf", show=False)
+
+# count the cluster fractions per sample, pca, and visualize
+for res in resolutions:
+    df = adata.obs.copy()
+    df = df.groupby(["sample_id", f"leiden_{res}"]).size().unstack()
+    df += 1 # adding pseudocount otherwise ilr breaks (returns NA)
+    df = df.div(df.sum(axis=1), axis=0)
+
+    # remove outlier sample MS94
+    df = df.loc[df.index != "MS94"]
+
+    # apply ilr (first check and ensure closure)
+    df.loc[:, :] = closure(df.values)
+    assert np.all(np.isclose(df.values.sum(axis=1), 1))
+    df_ilr = ilr(df.values)
+
+    pca = PCA(n_components=df_ilr.shape[1])
+    pca.fit(df_ilr)
+    pca_df = pd.DataFrame(pca.transform(df_ilr)[:,[0,1,2,3]], index=df.index, columns=["PC1", "PC2", "PC3", "PC4"])
+    pca_df["sample_id"] = pca_df.index.get_level_values(0)
+    pca_df.set_index("sample_id", inplace=True)
+    pca_df = pca_df.join(sample_meta.set_index("sample_id"),  on="sample_id", how="left", lsuffix="_pca", rsuffix="_meta")
+    pca_df = pca_df.reset_index()
+    pca_df.Batch = [str(b) for b in pca_df.Batch]
+
+    fig, ax = plt.subplots(3, 2, figsize=(14, 12))
+    ax = ax.flatten()
+    for axis, label in zip(ax, ["Condition", "lesion_type", "Batch", "Sex", "Age", "lesion_type"]):
+        sns.scatterplot(data=pca_df, x="PC1", y="PC2", hue=label, ax=axis)
+        axis.set_title(f"PCA on Cluster Proportions, colored by {label}")
+        axis.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        axis.set_xlabel(f"PC1: {np.round(pca.explained_variance_ratio_[0], 2)}")
+        axis.set_ylabel(f"PC2: {np.round(pca.explained_variance_ratio_[1], 2)}")
+        fig.tight_layout()
+        axis.set_aspect('equal', 'box')
+    # plot sample_id labels
+    for string, x, y in zip(pca_df.sample_id, pca_df.PC1, pca_df.PC2):
+        ax[5].text(x, y, string)
+    fig.savefig(plot_dir / f"cluster_fractions_pca_{res}.pdf")
 
 # count the cluster fractions per sample, divide by the rowsums
 for res in resolutions:

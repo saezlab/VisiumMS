@@ -105,6 +105,12 @@ adata_raw = adata_raw[adata_annotated.obs_names, :]
 adata_raw.obs = adata_annotated.obs
 adata_raw
 
+# save the raw adata object to run DOT
+if args.output == "cellbender":
+    adata_raw.write(current_folder / ".." / ".." / "data" / "prc" / "sc" / "adata_raw_cellbender.h5ad")
+elif args.output == "cellranger":
+    adata_raw.write(current_folder / ".." / ".." / "data" / "prc" / "sc" / "adata_raw_cellranger.h5ad")
+
 # Run one model for each spec
 for condition, samples in cond_dict.items():
 

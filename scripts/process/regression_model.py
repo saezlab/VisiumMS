@@ -41,6 +41,7 @@ args = parser.parse_args()
 current_folder = Path(__file__).parent
 # current_folder = globals()['_dh'][0]
 if args.output == "cellbender":
+    # NOTE: Updated cellranger atlas from Celia on 04.07: "annotated_cellbender_mod.h5ad"
     adata_annotated = sc.read_h5ad(current_folder / ".." / ".." / "data" / "prc" / "sc" / "annotated_cellbender_mod.h5ad")
     raw_input_dir = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellbender"
     samples = [sample for sample in os.listdir(raw_input_dir) if not sample.startswith(".")]
@@ -102,8 +103,7 @@ assert set(sample_meta.sample_id) == set(adata_annotated.obs[sample_id]), "Sampl
 
 # transfer the annotation
 adata_raw = adata_raw[adata_annotated.obs_names, :]
-adata_raw.obs = adata_annotated.obs
-adata_raw
+adata_raw.obs = adata_annotated.obs.copy()
 
 # save the raw adata object to run DOT
 if args.output == "cellbender":

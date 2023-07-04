@@ -3,12 +3,15 @@
 # python scripts/process/run_mofa.py --output cellranger --model all --ct_metric abunds --image_features None --n_factors 10 --recompute True
 # python scripts/process/run_mofa.py --output cellranger --model all --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
 
+# python scripts/process/run_mofa.py --output cellranger --model condition --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellbender --model condition --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
+
 # bash loop
 #for model in all condition; do
 #    for ct_metric in abunds props_ilr; do
 #        for image_features in None histogram summary texture; do
 #            for n_factors in 5 10; do
-#                python scripts/process/run_mofa.py --output cellranger --model $model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
+#                python scripts/process/run_mofa.py --output cellbender --model $model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
 #            done
 #        done
 #    done
@@ -18,7 +21,7 @@
 #for ct_metric in abunds props_ilr; do
 #    for image_features in None histogram summary texture; do
 #        for n_factors in 5 10; do
-#            python scripts/process/run_mofa.py --output cellranger --model all --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
+#            python scripts/process/run_mofa.py --output cellbender --model all --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
 #        done
 #    done
 #done
@@ -109,8 +112,8 @@ vis_dict = {smp: sc.read_h5ad(visium_path / f"{smp}.h5ad") for smp in visium_sam
 for values in vis_dict.values():
     values.obsm["props_ilr_all"] = pd.DataFrame(values.obsm["props_ilr_all"], index=values.obs.index, 
                                                 columns=["irl_" + str(s) for s in list(range(values.obsm["props_ilr_all"].shape[1]))])
-    #values.obsm["props_ilr_condition] = pd.DataFrame(values.obsm["props_ilr_condition"], index=values.obs.index, 
-    #                                                  columns=["irl_" + str(s) for s in list(range(values.obsm["props_ilr_condition"].shape[1]))])
+    values.obsm["props_ilr_condition"] = pd.DataFrame(values.obsm["props_ilr_condition"], index=values.obs.index, 
+                                                      columns=["irl_" + str(s) for s in list(range(values.obsm["props_ilr_condition"].shape[1]))])
     #values.obsm["props_ilr_lesion_type"] = pd.DataFrame(values.obsm["props_ilr_lesion_type"], index=values.obs.index, 
     #                                                    columns=["irl_" + str(s) for s in list(range(values.obsm["props_ilr_lesion_type"].shape[1]))])
 

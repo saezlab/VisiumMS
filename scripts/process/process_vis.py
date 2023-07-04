@@ -87,9 +87,7 @@ def read_slide(sample_id, visium_path, c2l_path):
     sc.pp.log1p(slide)
 
     # Read props and abunds
-    # NOTE: need to rerun condition c2l models for cellranger
-    #for model_call in ["all", "condition"]:
-    for model_call in ["all"]:
+    for model_call in ["all", "condition"]:
         suffix = lookup(model_call, sample_entry)
         m = pd.read_csv(c2l_path / sample_id / f"cell_abunds_{suffix}_q05_cell_abundance_w_sf.csv", index_col=0)
         inter = slide.obs.index.intersection(m.index)

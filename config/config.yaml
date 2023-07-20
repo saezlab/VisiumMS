@@ -1,0 +1,18 @@
+samples: 'config/meta.csv'
+
+cellbender:
+    model: full
+    expected_cells: 8000
+    total_droplets_included: 100000
+    fpr: 0.01
+    epochs: 150
+    posterior_batch_size: 5
+    cells_posterior_reg_calc: 50   
+
+qc:
+    min_genes: 200
+    min_cells: 3
+    mt_thr: 5
+    ct_thr: 0.99
+    db_thr: 0.2
+

@@ -1,0 +1,20 @@
+"Patient id","Sample id","Condition","Lesion type","Age","Sex","RIN","PMI (hrs)","Duration (years)","MS class","Cause of death","Batch sn","Batch vs"
+"CO37 P5B3","CO37","Control","Ctrl",87,"M",6.1,5,"NA","NA","Bladder cancer;Pneumonia",4,3
+"PDCO40 A1B2","CO40","Control","Ctrl",61,"F",7.8,15,"NA","NA","Ovarian cancer",1,1
+"CO41 A1C4","CO41","Control","Ctrl",54,"M",7.2,20,"NA","NA","Lung cancer",4,3
+"CO45 A1D4","CO45","Control","Ctrl",77,"M",6.4,22,"NA","NA","Cardio pulmonary degeneration;Prostate cancer;Old age;Alzheimers",4,"NA"
+"CO74 A1A2","CO74","Control","Ctrl",84,"F",7,22,"NA","NA","Heart failure;Kidney impairment",2,2
+"CO85 A3C2","CO85","Control","Ctrl",81,"F",5.9,22,"NA","NA","NA",3,1
+"CO96 A3C3","CO96","Control","Ctrl",68,"F",7.7,"NA","NA","NA","Aspiration pneumonia;Parkinson’s disease;Atherosclerosis","NA",1
+"MS94 A1D9","MS94","MS","CA",42,"F",8.7,11,6,"PPMS","Bronchial pneumonia;MS","NA",1
+"MS197 P2D3","MS197D","MS","CA",52,"F",9,10,"NA","SPMS","Bronchial pneumonia;MS",4,1
+"MS197 P2D3","MS197U","MS","CA",52,"F",9,10,"NA","SPMS","Bronchial pneumonia;MS","NA",1
+"MS229 P2C2","MS229","MS","CA",53,"M",7,13,16,"SPMS","Bronchial pneumonia",4,1
+"MS377 A2D2","MS377N","MS","CA",50,"F",8.9,22,23,"SPMS","Aspiration pneumonia",4,3
+"MS377 A2D4","MS377T","MS","CA",50,"F",6.5,22,23,"SPMS","Aspiration pneumonia",1,1
+"MS377 A2D4","MS377I","MS","CA",50,"F",6.5,22,23,"SPMS","Aspiration pneumonia",1,1
+"MS411 A2A2","MS411","MS","CA",61,"M",5.9,24,29,"SPMS","Pneumonia;MS",1,1
+"MS497 A3C2","MS497I","MS","CI",60,"F",6.1,26,29,"SPMS","Aspiration pneumonia",3,1
+"MS497 A3C2","MS497T","MS","CI",60,"F",6.1,26,29,"SPMS","Aspiration pneumonia",2,1
+"MS549 P2D5","MS549H","MS","CI",50,"M",8,8,29,"SPMS","MS",2,1
+"MS549 P2D5","MS549T","MS","CI",50,"M",8,8,29,"SPMS","MS",3,1

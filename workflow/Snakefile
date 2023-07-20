@@ -1,4 +1,19 @@
 from snakemake.utils import min_version
 min_version("6.0")
 
+
+import pandas as pd
+meta = pd.read_csv('config/meta.csv')
+sn_samples = meta[~meta['Batch sn'].isnull()]['Sample id'].values.astype('U')
+vs_samples = meta[~meta['Batch vs'].isnull()]['Sample id'].values.astype('U')
+
+
 configfile: "config/config.yaml"
+container: "workflow/envs/env.sif"
+
+# Load rules
+rule all:
+    input: expand("data/prc/sn/{sn_sample}/adata.h5ad", sn_sample=sn_samples)
+
+#include: "rules/backrm.smk"
+include: "rules/qc.smk"

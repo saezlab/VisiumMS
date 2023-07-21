@@ -41,6 +41,7 @@ sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, log1p=False,
 
 # Compute doublet scores
 sce.pp.scrublet(adata, verbose=False)
+del adata.obs['predicted_doublet']
 
 # Find msk
 mt_msk = adata.obs['pct_counts_mt'] < mt_thr

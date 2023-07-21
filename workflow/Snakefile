@@ -13,7 +13,10 @@ container: "workflow/envs/env.sif"
 
 # Load rules
 rule all:
-    input: expand("data/prc/sn/{sn_sample}/adata.h5ad", sn_sample=sn_samples)
+    input: 'results/integrate/sn_integrate.pdf' #expand("data/prc/sn/{sn_sample}/adata.h5ad", sn_sample=sn_samples)
 
 #include: "rules/backrm.smk"
 include: "rules/qc.smk"
+include: "rules/integrate.smk"
+
+# snakemake --profile config/slurm/

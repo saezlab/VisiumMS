@@ -13,7 +13,7 @@ container: "workflow/envs/env.sif"
 
 # Load rules
 rule all:
-    input: 'results/integrate/sn_integrate.pdf' #expand("data/prc/sn/{sn_sample}/adata.h5ad", sn_sample=sn_samples)
+    input: 'data/prc/sn_annotated.h5ad' #expand("data/prc/sn/{sn_sample}/adata.h5ad", sn_sample=sn_samples)
 
 #include: "rules/backrm.smk"
 include: "rules/qc.smk"

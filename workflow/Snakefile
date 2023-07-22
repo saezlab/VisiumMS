@@ -18,5 +18,6 @@ rule all:
 #include: "rules/backrm.smk"
 include: "rules/qc.smk"
 include: "rules/integrate.smk"
+include: "rules/atlases.smk"
 
 # snakemake --profile config/slurm/

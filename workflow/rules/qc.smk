@@ -24,3 +24,28 @@ rule merge_sn_qc:
         """
         python workflow/scripts/general/merge_pdfs.py -i {input} -o {output}
         """
+
+rule vm_qc:
+    input:
+         "data/raw/vs/{vs_sample}/"
+    output:
+         "data/raw/vs/{vs_sample}/adata.h5ad",
+         "results/qc/vs_{vs_sample}.pdf"
+    params:
+        min_genes=config['qc']['min_genes'],
+        min_cells=config['qc']['min_cells'],
+        colors_dict=config['colors_areas']
+    shell:
+        """
+        python workflow/scripts/qc/vs.py -i {input} -g {params.min_genes} -c {params.min_cells} -d '{params.colors_dict}'
+        """
+
+rule merge_vm_qc:
+    input:
+        expand('results/qc/vs_{vs_sample}.pdf', vs_sample=vs_samples)
+    output:
+        'results/qc/vs_all.pdf'
+    shell:
+        """
+        python workflow/scripts/general/merge_pdfs.py -i {input} -o {output}
+        """

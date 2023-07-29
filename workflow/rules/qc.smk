@@ -25,11 +25,12 @@ rule merge_sn_qc:
         python workflow/scripts/general/merge_pdfs.py -i {input} -o {output}
         """
 
-rule vm_qc:
+rule vs_qc:
     input:
-         "data/raw/vs/{vs_sample}/"
+         sample="data/raw/vs/{vs_sample}/",
+         meta='config/meta.csv'
     output:
-         "data/raw/vs/{vs_sample}/adata.h5ad",
+         "data/prc/vs/{vs_sample}/adata.h5ad",
          "results/qc/vs_{vs_sample}.pdf"
     params:
         min_genes=config['qc']['min_genes'],
@@ -37,10 +38,10 @@ rule vm_qc:
         colors_dict=config['colors_areas']
     shell:
         """
-        python workflow/scripts/qc/vs.py -i {input} -g {params.min_genes} -c {params.min_cells} -d '{params.colors_dict}'
+        python workflow/scripts/qc/vs.py -i {input.sample} -m {input.meta} -g {params.min_genes} -c {params.min_cells} -d '{params.colors_dict}'
         """
 
-rule merge_vm_qc:
+rule merge_vs_qc:
     input:
         expand('results/qc/vs_{vs_sample}.pdf', vs_sample=vs_samples)
     output:
@@ -48,4 +49,17 @@ rule merge_vm_qc:
     shell:
         """
         python workflow/scripts/general/merge_pdfs.py -i {input} -o {output}
+        """
+
+rule summary:
+    input:
+        sn_inp_path='data/prc/sn_annotated.h5ad',
+        meta='config/meta.csv',
+        sn_qc='results/qc/sn_all.pdf',
+        vs_qc='results/qc/vs_all.pdf'
+    output:
+        'results/qc/summary.pdf'
+    shell:
+        """
+        python workflow/scripts/qc/summary.py -s {input.sn_inp_path} -v 'data/prc/vs/' -m {input.meta} -p {output}
         """

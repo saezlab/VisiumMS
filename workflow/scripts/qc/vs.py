@@ -8,28 +8,36 @@ import argparse
 # Init args
 parser = argparse.ArgumentParser()
 parser.add_argument('-i','--sample_path', required=True)
+parser.add_argument('-m','--meta_path', required=True)
 parser.add_argument('-g','--min_genes', required=True)
 parser.add_argument('-c','--min_cells', required=True)
 parser.add_argument('-d','--colors_dict', required=True)
 args = vars(parser.parse_args())
 
 path_sample = args['sample_path']
+meta_path = args['meta_path']
 min_genes = int(args['min_genes'])
 min_cells = int(args['min_cells'])
 colors_dict = args['colors_dict']
 colors_dict = dict(item.split('_') for item in colors_dict.strip("'").split(';'))
 sample_id = os.path.normpath(path_sample).split(os.path.sep)[-1]
 plot_path = os.path.join('results', 'qc', 'vs_{0}.pdf'.format(sample_id))
-out_path = os.path.join(path_sample, 'adata.h5ad')
+out_path = os.path.join('data', 'prc', 'vs', sample_id, 'adata.h5ad')
 
-# Read slide
+# Read slide and metadata
 adata = sc.read_visium(path_sample, count_file='raw_feature_bc_matrix.h5')
 adata.var_names_make_unique()
 adata.obsm['spatial'] = adata.obsm['spatial'].astype(float)
 
 # Read areas
 path_areas = os.path.join(path_sample, 'areas.csv')
-adata.obs['areas'] = areas = pd.read_csv(path_areas, index_col=0)['Pathology_annotation']
+adata.obs['areas'] = pd.read_csv(path_areas, index_col=0)['Pathology_annotation']
+
+# Add metadata
+meta = pd.read_csv(meta_path)
+meta = meta[meta['Sample id'] == sample_id]
+for col in meta.columns:
+    adata.obs[col] = meta[col].values[0]
 
 # Remove spots not in tissue
 msk = adata.obs['in_tissue'].astype(int) > 0

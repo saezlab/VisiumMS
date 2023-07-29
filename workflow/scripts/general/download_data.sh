@@ -22,6 +22,7 @@ download_file() {
 
 # Function to unzip the downloaded file
 unzip_file() {
+    mv "$output_path" "$output_path.gz"
     gzip -d "$output_path"
 }
 

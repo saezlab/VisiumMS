@@ -30,3 +30,5 @@ atlases:
     absinta_2021:
         annot: 'https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE180759&format=file&file=GSE180759%5Fannotation%2Etxt%2Egz'
         count: 'https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE180759&format=file&file=GSE180759%5Fexpression%5Fmatrix%2Ecsv%2Egz'
+
+hallmarks: 'config/hallmarks.csv'

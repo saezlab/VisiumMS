@@ -45,3 +45,22 @@ rule sn_annotate:
         """
         python workflow/scripts/integrate/sn_annotate.py -i {input} -m {params.markers} -r {params.resolution} -a '{params.annotation}' -p {output.plot_path} -o {output.out_path}
         """
+
+rule niches_mofa:
+    input:
+        meta="config/meta.csv",
+        hallmarks=expand("data/prc/vs/{vs_sample}/hallmarks.csv", vs_sample=vs_samples),
+        abunds=expand("data/prc/vs/{vs_sample}/abunds.csv", vs_sample=vs_samples)
+    output:
+        plot='results/integrate/vs_mofa_r2.pdf',
+        model='data/prc/niches_mofa.hdf5'
+    params:
+        n_factors=config['niches_mofa']['n_factors']
+    resources:
+        partition='cpu-multi',
+        mem_mb=64000,
+        slurm='ntasks-per-node=64'
+    shell:
+        """
+        python workflow/scripts/integrate/niches_mofa.py -m {input.meta} -n {params.n_factors} -p {output.plot} -o {output.model}
+        """

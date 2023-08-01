@@ -1,3 +1,7 @@
+
+# python scripts/plot/merge_metrics.py --output cellbender
+# python scripts/plot/merge_metrics.py --output cellranger
+
 import scanpy as sc
 import numpy as np
 import pandas as pd
@@ -6,22 +10,37 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from plotting import plot_ngene_diff, plot_hvg_nbatches, plot_ngenes_vs_counts, plot_sorted_rank
 import argparse
+from pathlib import Path
 import os
 
 """
 Script to plot different QC metrics after merging the data.
 """
 
-# Read command line and set args
+# add command line flag arguments to specify either "cellbender" or "cellranger" output
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input_path', help='Input path to merged object', required=True)
-parser.add_argument('-v', '--version', help='Version of the merging', required=False)
-parser.add_argument('-o', '--output_dir', help='Output directory', required=True)
-args = vars(parser.parse_args())
+parser.add_argument("--output", type=str, required=True)
+args = parser.parse_args()
 
-input_path = args['input_path']
-version = args['version']
-output_path = args['output_dir']
+# set up relative paths within the project
+current_folder = Path(__file__).parent
+output_dir = current_folder / ".." / ".." / "data" / "prc" / "sc"
+if args.output == "cellbender":
+    input_path = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellbender_merged.h5ad"
+    output_dir = current_folder / ".." / ".." / "out" / "cellbender_merge"
+elif args.output == "cellranger":
+    input_path = current_folder / ".." / ".." / "data" / "prc" / "sc" / "cellranger_merged.h5ad"
+    output_dir = current_folder / ".." / ".." / "out" / "cellranger_merge"
+else:
+    raise ValueError("output must be either 'cellbender' or 'cellranger'")
+output_dir.mkdir(parents=True, exist_ok=True)
+
+# verbose
+print("input_path: ", input_path)
+print("output_dir: ", output_dir)
+
+version = "0"
+
 ###############################
 
 # Read merged object
@@ -60,4 +79,4 @@ if version is not None:
     fname = 'merged_summary_{0}.png'.format(version)
 else:
     fname = 'merged_summary.png'
-fig.savefig(os.path.join(output_path, fname))
+fig.savefig(os.path.join(output_dir, fname))

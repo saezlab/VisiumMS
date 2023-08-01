@@ -263,7 +263,3 @@ get_optimal = function(out_dir_name,
   })
   
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> Added plotting scripts

@@ -76,11 +76,7 @@ def compute_lr_corrs(df, sample_id):
 
         # Filter by min_prop for both cells
         msk_s = slide.obsm['props'][s].values > min_prop
-<<<<<<< HEAD
         msk_t = slide.obsm['props'][s].values > min_prop
-=======
-        msk_t = slide.obsm['props'][t].values > min_prop
->>>>>>> Added plotting scripts
         tmp = slide[msk_s & msk_t]
 
         # Compute corrs
@@ -130,9 +126,5 @@ mean_corrs = (
 f_mean_corrs = mean_corrs[np.abs(mean_corrs['diff']) > 0.05]
 
 # Write
-<<<<<<< HEAD
 f_mean_corrs.to_csv('data/prc/liana/mapped_inters.csv', index=False)
 
-=======
-f_mean_corrs.to_csv('data/prc/liana/mapped_inters.csv', index=False)
->>>>>>> Added plotting scripts

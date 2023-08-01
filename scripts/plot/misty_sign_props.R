@@ -57,9 +57,5 @@ plot_misty_res <- function(lesion_type, sign_type){
 plot_misty_res('Chronic Active', 'pos')
 plot_misty_res('Chronic Active', 'neg')
 plot_misty_res('Control', 'pos')
-<<<<<<< HEAD
 plot_misty_res('Control', 'neg')
 
-=======
-plot_misty_res('Control', 'neg')
->>>>>>> Added plotting scripts

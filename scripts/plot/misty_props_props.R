@@ -54,7 +54,4 @@ plot_misty_res <- function(lesion_type){
 
 plot_misty_res('Chronic Active')
 plot_misty_res('Control')
-<<<<<<< HEAD
 
-=======
->>>>>>> Added plotting scripts

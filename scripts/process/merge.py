@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 
 # python scripts/process/merge.py --output cellbender
 # python scripts/process/merge.py --output cellranger
 
-=======
->>>>>>> 4059a4c8e2af9c39af787ebee1439fc854d311d6
 import scanpy as sc
 import scanpy.external as sce
 
@@ -13,16 +10,12 @@ import pandas as pd
 
 import os
 import argparse
-<<<<<<< HEAD
 from pathlib import Path
-=======
->>>>>>> 4059a4c8e2af9c39af787ebee1439fc854d311d6
 
 '''
 Open all samples QC processed files, concatenate them and run integration
 '''
 
-<<<<<<< HEAD
 # add command line flag arguments to specify either "cellbender" or "cellranger" output
 parser = argparse.ArgumentParser()
 parser.add_argument("--output", type=str, required=True)
@@ -62,32 +55,6 @@ for sample in samples:
     
     # Read adata
     tmp = sc.read_h5ad(input_dir / (sample + '.h5ad'))
-=======
-# Read command line and set args
-parser = argparse.ArgumentParser(prog='qc', description='Run QC per sample')
-parser.add_argument('-i', '--input_dir', help='Input directory containing all sample directories', required=True)
-parser.add_argument('-m', '--metadata', help='Path to metadata', required=True)
-parser.add_argument('-o', '--output_dir', help='Output directory where to store the processed object', required=True)
-args = vars(parser.parse_args())
-
-input_path = args['input_dir']
-meta_path = args['metadata']
-output_path = args['output_dir']
-###############################
-
-# Load meta data
-meta = pd.read_csv(meta_path)
-samples = np.unique(meta['sample_id'])
-
-adata = []
-for sample in os.listdir(input_path):
-    if not os.path.isdir(os.path.join(input_path, sample)) or sample.startswith('.'):
-        continue
-    print(sample)
-    
-    # Read adata
-    tmp = sc.read_h5ad(os.path.join(input_path, sample, sample+'.h5ad'))
->>>>>>> 4059a4c8e2af9c39af787ebee1439fc854d311d6
     
     # Fetch sample metadata
     m = meta[meta['sample_id'] == sample]
@@ -102,16 +69,10 @@ for sample in os.listdir(input_path):
     
 # Merge objects and delete list
 adata = adata[0].concatenate(adata[1:], join='outer')
-<<<<<<< HEAD
 print(adata)
 
 # Log-normalize expression
 sc.pp.normalize_total(adata, target_sum=1e4)
-=======
-
-# Log-normalize expression
-sc.pp.normalize_total(adata)
->>>>>>> 4059a4c8e2af9c39af787ebee1439fc854d311d6
 sc.pp.log1p(adata)
 
 # Compute HVG
@@ -136,8 +97,4 @@ sc.pp.neighbors(adata)
 sc.tl.umap(adata)
 
 # Write to file
-<<<<<<< HEAD
 adata.write(output_dir / out_name)
-=======
-adata.write(os.path.join(output_path, 'merged.h5ad'))
->>>>>>> 4059a4c8e2af9c39af787ebee1439fc854d311d6

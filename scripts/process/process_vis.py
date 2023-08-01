@@ -137,7 +137,7 @@ hallmark.loc[:, 'geneset'] = [name.split('HALLMARK_')[1] for name in hallmark['g
 hallmark = hallmark.loc[:, ['geneset', 'genesymbol']] # reorder columns
 
 # get progeny db
-progeny = dc.get_progeny(top=300)
+progeny = dc.get_progeny(top=300) # only possible for progeny because we weights are not available for hallmark or reactome
 progeny = progeny.rename(columns={'source': 'geneset', 'target': 'genesymbol'})
 progeny = progeny.loc[:, ['geneset', 'genesymbol', 'weight']] # reorder columns
 
@@ -146,11 +146,15 @@ reactome = msigdb[msigdb['collection'] == 'reactome_pathways']
 reactome = reactome.loc[:, ['geneset', 'genesymbol']] # reorder columns
 reactome = reactome[~reactome.duplicated(['geneset', 'genesymbol'])]
 
-# infer pathway activity per slide
+# infer pathway activity per spot using ulm and wmean (for now remove reactome)
 for key, adata in vis_dict.items():
     print(key)
-    for pkn, pkn_name in zip([hallmark, progeny, reactome], ["hallmark", "progeny", "reactome"]):
+
+    #for pkn, pkn_name in zip([hallmark, progeny, reactome], ["hallmark", "progeny", "reactome"]):  
+    for pkn, pkn_name in zip([hallmark, progeny], ["hallmark", "progeny"]):
         print(pkn_name)
+
+        # run ulm
         dc.run_ulm(
             mat=adata,
             net=pkn,
@@ -159,9 +163,24 @@ for key, adata in vis_dict.items():
             weight="weight" if pkn_name in ["progeny"] else None,
             verbose=True,
             use_raw=True)
-        adata.obsm[f"{pkn_name}_estimates"] = adata.obsm["ulm_estimate"]
-        adata.obsm[f"{pkn_name}_pvals"] = adata.obsm["ulm_pvals"]
+        adata.obsm[f"{pkn_name}ulm_estimate"] = adata.obsm["ulm_estimate"]
+        adata.obsm[f"{pkn_name}_ulm_pvals"] = adata.obsm["ulm_pvals"]
         del adata.obsm["ulm_estimate"], adata.obsm["ulm_pvals"]
+        
+        # run wmean
+        dc.run_wmean(
+            mat=adata,
+            net=pkn,
+            source="geneset",
+            target="genesymbol",
+            weight="weight" if pkn_name in ["progeny"] else None,
+            verbose=True,
+            use_raw=True)
+        adata.obsm[f"{pkn_name}_wmean_estimate"] = adata.obsm["wmean_estimate"]
+        adata.obsm[f"{pkn_name}_wmean_norm"] = adata.obsm["wmean_norm"]
+        adata.obsm[f"{pkn_name}_wmean_corr"] = adata.obsm["wmean_corr"]
+        adata.obsm[f"{pkn_name}_wmean_pvals"] = adata.obsm["wmean_pvals"]
+        del adata.obsm["wmean_estimate"], adata.obsm["wmean_norm"], adata.obsm["wmean_corr"], adata.obsm["wmean_pvals"]
 
 # save the adata objects
 for key, adata in vis_dict.items():

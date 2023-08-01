@@ -1,29 +1,28 @@
 
 # usage
-# python scripts/process/run_mofa.py --output cellranger --model all --ct_metric abunds --image_features None --n_factors 10 --recompute True
-# python scripts/process/run_mofa.py --output cellranger --model all --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellbender --deconv_model all --dc_model ulm --ct_metric abunds --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellbender --deconv_model all --dc_model wmean --ct_metric abunds --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellbender --deconv_model all --dc_model ulm --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellbender --deconv_model all --dc_model wmean --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
 
-# python scripts/process/run_mofa.py --output cellranger --model condition --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
-# python scripts/process/run_mofa.py --output cellbender --model condition --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellranger --deconv_model all --dc_model ulm --ct_metric abunds --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellranger --deconv_model all --dc_model wmean --ct_metric abunds --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellranger --deconv_model all --dc_model ulm --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
+# python scripts/process/run_mofa.py --output cellranger --deconv_model all --dc_model wmean --ct_metric props_ilr --image_features None --n_factors 10 --recompute True
 
-# bash loop
-#for model in all condition; do
-#    for ct_metric in abunds props_ilr; do
-#        for image_features in None histogram summary texture; do
-#            for n_factors in 5 10; do
-#                python scripts/process/run_mofa.py --output cellbender --model $model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
-#            done
-#        done
-#    done
-#done
-
-# bash loop for model=all
-#for ct_metric in abunds props_ilr; do
-#    for image_features in None histogram summary texture; do
-#        for n_factors in 5 10; do
-#            python scripts/process/run_mofa.py --output cellbender --model all --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
-#        done
-#    done
+# bash loop (for all combinations of interest)
+#for output in cellbender; do
+#   for deconv_model in all condition; do
+#       for dc_model in ulm wmean; do   
+#          for ct_metric in abunds props_ilr; do
+#              for image_features in None histogram summary texture; do
+#                  for n_factors in 10; do
+#                      python scripts/process/run_mofa.py --output $output --deconv_model $deconv_model --dc_model $dc_model --ct_metric $ct_metric --image_features $image_features --n_factors $n_factors --recompute True
+#                  done
+#              done
+#          done
+#      done
+#   done
 #done
 
 # resources
@@ -40,6 +39,8 @@ from pathlib import Path
 
 from sklearn.decomposition import PCA
 from umap import UMAP
+from scipy.stats import ranksums, zscore
+
 from composition_stats import closure, ilr
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -50,7 +51,8 @@ import argparse
 # get cmd line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--output", type=str, required=True, help="['cellbender', 'cellranger']")
-parser.add_argument("--model", type=str, required=True, help="['all', 'condition', 'lesion_type']")
+parser.add_argument("--deconv_model", type=str, required=True, help="['all', 'condition', 'lesion_type']")
+parser.add_argument("--dc_model", type=str, required=True, help="['ulm', 'wmean']")
 parser.add_argument("--ct_metric", type=str, required=True, help="['abunds', 'props', 'props_ilr']")
 parser.add_argument("--image_features", type=str, required=True, help="['None', 'histogram', 'summary', 'texture']")
 parser.add_argument("--n_factors", type=int, required=True)
@@ -59,24 +61,26 @@ parser.add_argument("--recompute", type=str, required=False, default="False")
 # parse arguments and check
 args = parser.parse_args()
 assert args.output in ["cellranger", "cellbender"]
-assert args.model in ["all", "condition", "lesion_type"]
+assert args.deconv_model in ["all", "condition", "lesion_type"]
+assert args.dc_model in ["ulm", "wmean"]
 assert args.ct_metric in ["abunds", "props", "props_ilr"]
 assert args.image_features in ["None", "histogram", "summary", "texture"]
 assert args.recompute in ["True", "true", "False", "false"]
 args.recompute = args.recompute in ["True", "true"]
 
-# command line arguments, NOTE: hallmarks are always used
-obsm_to_use = ["hallmark_estimates"]
+#NOTE: hallmarks are always used
+obsm_to_use = []
+#TODO: rerun process and remove this line
+#obsm_to_use.append(f"hallmark_{args.dc_model}_estimates")
+if args.dc_model == "ulm":
+    obsm_to_use.append("hallmark_ulm_estimates") # see here "estimates"
+elif args.dc_model == "wmean":
+    obsm_to_use.append("hallmark_wmean_estimate") # see here "estimate"
 
 if args.image_features != "None":
     obsm_to_use.append(args.image_features)
 
-#if args.ct_metric in ["abunds", "props"]:
-#    obsm_to_use.append(f"{args.ct_metric}_{args.model}")
-#elif args.ct_metric == "props_ilr":
-#    obsm_to_use.append(f"props_{args.model}_ilr")
-# NOTE: I fixed the above in the process_vis.py code
-obsm_to_use.append(f"{args.ct_metric}_{args.model}")
+obsm_to_use.append(f"{args.ct_metric}_{args.deconv_model}")
 
 print(f"Using the following views: {obsm_to_use}")
 
@@ -85,7 +89,7 @@ ent = entry_point()
 
 # set the paths
 current_path = Path(__file__).parent
-out_dir = current_path / ".." / ".." / "data" / "prc" / "vis" / "mofa_tests" / args.output/ f"{args.model}__{args.ct_metric}__{args.image_features}__{str(args.n_factors)}"
+out_dir = current_path / ".." / ".." / "data" / "prc" / "vis" / "mofa_tests" / args.output/ f"{args.deconv_model}__{args.ct_metric}__{args.dc_model}__{args.image_features}__{str(args.n_factors)}"
 plot_dir = out_dir / "plots"
 sc.settings.figdir = str(plot_dir)
 out_dir.mkdir(parents=True, exist_ok=True)
@@ -299,18 +303,71 @@ for obsm_key in obsm_to_use:
     df = df.join(adata.obs[meta_keys], on="cell")
     df.reset_index(inplace=True)
     df = df.melt(id_vars=["cell"]+meta_keys, var_name="feature", value_name="value")
+    assert df.value.isna().sum() == 0
+    if "abunds" in obsm_key:
+        # use proportions instead of abundances for cell types
+        df["value"] = df.groupby(["cell"])["value"].transform(lambda x: x / x.sum())
     for res in resolutions:
-        df_tmp = df.groupby(["feature", f"leiden_{res}"]).mean().reset_index()
-        df_tmp["min_max_value"] = df_tmp.groupby(["feature"]).value.apply(lambda x: (x - x.min()) / (x.max() - x.min()))
-        fig, ax = plt.subplots(1, 2, figsize=(24, 12))
-        sns.heatmap(data=df_tmp.pivot(index="feature", columns=f"leiden_{res}", values="value"), 
-                    cmap="viridis", ax=ax[0])
-        sns.heatmap(data=df_tmp.pivot(index="feature", columns=f"leiden_{res}", values="min_max_value"), 
-                cmap="viridis", ax=ax[1])
-        ax[0].set_title("Raw values")
-        ax[1].set_title("Min-max scaled values per feature")
+        # get niches and features
+        leidens, features = df[f"leiden_{res}"].unique(), df.feature.unique()
+        df_tmp = df.groupby(["sample_id", f"leiden_{res}", "feature"]).mean().reset_index()
+        df_tmp.value.fillna(0, inplace=True) # replace NA in value column with 0
+
+        # compute p-values using ranksums test
+        pvals = []
+        for leiden in leidens:
+                row = []
+                msk = df_tmp[f"leiden_{res}"] == leiden
+                for f in features:
+                    w, p = ranksums(df_tmp.value[df_tmp.feature==f][msk], df_tmp.value[df_tmp.feature==f][~msk], alternative='two-sided')
+                    row.append(p)
+                row = dc.p_adjust_fdr(row)
+                pvals.append(row)
+        pvals = pd.DataFrame(pvals, columns=features, index=leidens)
+
+        pvals.loc[:, :] = np.where(pvals.values < 0.05, '*', '')
+
+        df_plot = df_tmp.groupby([f"leiden_{res}", "feature"]).mean().reset_index()
+        df_plot = df_plot.pivot(index=f"leiden_{res}", columns="feature", values="value")
+        df_plot.loc[:, :] = zscore(df_plot.values, axis=0, ddof=1)
+
+        cmap = plt.get_cmap('coolwarm').copy()
+        cmap.set_bad(color='gray')
+        
+        if ("abunds" in obsm_key) or ("ilr" in obsm_key):
+            fig, ax = plt.subplots(1, 1, figsize=(6, 6), facecolor='white', dpi=125)
+        else:
+             fig, ax = plt.subplots(1, 1, figsize=(24, 12), facecolor='white', dpi=125)
+        htm = sns.heatmap(df_plot.T, cmap=cmap, square=True, center=0, vmax=1, vmin=-1, ax=ax, cbar_kws={"shrink": .4, "aspect": 5},
+                        annot=pvals.T.values.astype('U'), fmt='', annot_kws={'fontweight': 'black', 'color': 'black'})
+        i = 0
+        for _, spine in htm.spines.items():
+            if i % 2 == 0:
+                spine.set_visible(True)
+            i += 1
+
         fig.savefig(plot_dir / f"feature_heatmap_{obsm_key}_res_{res}.pdf")
 
+# NOTE: Old Code
+# compute average features per cluster
+#for obsm_key in obsm_to_use:
+#    df = adata.obsm[obsm_key].copy()
+#    meta_keys = ["sample_id", "Condition", "lesion_type"] + ["leiden_" + str(res) for res in resolutions]
+#    df = df.join(adata.obs[meta_keys], on="cell")
+#    df.reset_index(inplace=True)
+#    df = df.melt(id_vars=["cell"]+meta_keys, var_name="feature", value_name="value")
+#    for res in resolutions:
+#        df_tmp = df.groupby(["feature", f"leiden_{res}"]).mean().reset_index()
+#        df_tmp["min_max_value"] = df_tmp.groupby(["feature"]).value.apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+#        fig, ax = plt.subplots(1, 2, figsize=(24, 12))
+#        sns.heatmap(data=df_tmp.pivot(index="feature", columns=f"leiden_{res}", values="value"), 
+#                    cmap="viridis", ax=ax[0])
+#        sns.heatmap(data=df_tmp.pivot(index="feature", columns=f"leiden_{res}", values="min_max_value"), 
+#                cmap="viridis", ax=ax[1])
+#        ax[0].set_title("Raw values")
+#        ax[1].set_title("Min-max scaled values per feature")
+#        fig.savefig(plot_dir / f"feature_heatmap_{obsm_key}_res_{res}.pdf")
+#
 # compute feature loadings per factor
 for obsm_key in obsm_to_use:
     features = obsm_features[obsm_key]

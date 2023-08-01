@@ -63,3 +63,16 @@ rule summary:
         """
         python workflow/scripts/qc/summary.py -s {input.sn_inp_path} -v 'data/prc/vs/' -m {input.meta} -p {output}
         """
+
+rule deconv_qc:
+    input:
+        meta_path='config/meta.csv',
+        ann_path='data/prc/sn_annotated.h5ad',
+        samples=expand('data/prc/vs/{vs_sample}/props.csv', vs_sample=vs_samples)
+    output:
+        leiden='results/qc/deconv_leiden.pdf',
+        sample='results/qc/deconv_sample.pdf'
+    shell:
+        """
+        python workflow/scripts/qc/deconv.py -m {input.meta_path} -a {input.ann_path} -s {output.sample} -l {output.leiden}
+        """

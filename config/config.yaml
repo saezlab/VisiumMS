@@ -32,3 +32,6 @@ atlases:
         count: 'https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE180759&format=file&file=GSE180759%5Fexpression%5Fmatrix%2Ecsv%2Egz'
 
 hallmarks: 'config/hallmarks.csv'
+
+niches_mofa:
+    n_factors: 10

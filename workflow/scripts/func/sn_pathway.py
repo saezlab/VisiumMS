@@ -52,5 +52,5 @@ for contrast in contrasts:
 res = pd.concat(res).reset_index(drop=True)
 
 # Write
-res.to_csv(out_path)
+res.to_csv(out_path, index=False)
 

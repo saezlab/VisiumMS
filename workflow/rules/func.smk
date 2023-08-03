@@ -22,15 +22,13 @@ rule sn_pathway:
         python workflow/scripts/func/sn_pathway.py -i {input.inp} -g {input.gmt} -o {output}
         """
 
-rule vs_hallmarks:
+rule vs_pathway:
     input:
-        'data/prc/vs/{vs_sample}/adata.h5ad'
+        inp='data/prc/vs/{vs_sample}/adata.h5ad',
+        gmt='config/c2.cp.reactome.v2023.1.Hs.symbols.gmt'
     output:
-        'data/prc/vs/{vs_sample}/hallmarks.csv'
-    params:
-        hallm_path=config['hallmarks']
+        'data/prc/vs/{vs_sample}/pathway.csv'
     shell:
         """
-        python workflow/scripts/func/vs_hallmarks.py -s {input} -g {params.hallm_path} -o {output}
+        python workflow/scripts/func/vs_pathway.py -s {input.inp} -g {input.gmt} -o {output}
         """
-

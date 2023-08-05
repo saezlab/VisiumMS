@@ -16,7 +16,7 @@ qc:
     ct_thr: 0.99
     db_thr: 0.1
 
-colors_areas: 'WM_tab:blue;GM_tab:orange;PPWM_tab:green;LR_tab:red;LC_tab:purple;Ependym_tab:brown;Claustrum_tab:pink'
+colors_areas: 'WM_tab:blue;GM_tab:orange;PPWM_tab:green;LR_tab:red;LC_tab:purple;Ependym_tab:brown;VI_tab:pink;Claustrum_tab:gray'
 
 sn_integrate:
     n_hvg: 4096
@@ -35,3 +35,23 @@ hallmarks: 'config/hallmarks.csv'
 
 niches_mofa:
     n_factors: 10
+
+niches_ann:
+    CO37: '0:WM;1:WM;2:WM;3:WM;4:WM;5:WM;6:WM;7:WM;8:WM;9:WM;10:WM;11:WM;12:WM;13:WM;14:WM'
+    CO40: '0:WM;1:WM;2:WM;3:WM;4:WM;5:WM;6:WM;7:WM;8:WM;9:WM;10:WM;11:WM;12:WM;13:WM;14:WM;15:GM'
+    CO41: '0:WM;1:WM;2:WM;3:WM;4:WM;5:WM;6:WM;7:WM;8:WM;9:WM;10:WM;11:WM;12:GM;13:GM'
+    CO74: '0:WM;1:WM;2:WM;3:WM;4:WM;5:WM;6:WM;7:WM;8:WM;9:WM;10:WM;11:GM;12:WM;13:WM;14:GM'
+    CO85: '0:WM;1:WM;2:WM;3:WM;4:WM;5:WM;6:WM;7:WM;8:WM;9:WM;10:WM;11:WM;12:WM;13:WM'
+    CO96: '0:WM;1:WM;2:WM;3:WM;4:WM;5:WM;6:WM;7:WM;8:WM;9:WM;10:WM;11:WM;12:WM'
+    MS94: '0:GM;1:PPWM;2:GM;3:PPWM;4:LR;5:GM;6:LR;7:LC;8:LR;9:LR;10:GM;11:VI;12:LC;13:LC'
+    MS197D: '0:GM;1:LC;2:LR;3:LR;4:LC;5:LC;6:LR;7:GM;8:LC;9:VI;10:PPWM'
+    MS197U: '0:LR;1:LR;2:LC;3:LC;4:LC;5:LC;6:LC;7:LC;8:LC;9:LR;10:VI;11:LC;12:VI'
+    MS229: '0:PPWM;1:LC;2:PPWM;3:LC;4:LC;5:LC;6:LC;7:PPWM;8:VI;9:LR;10:LC;11:LR;12:GM'
+    MS377I: '0:GM;1:GM;2:LC;3:GM;4:GM;5:LR;6:PPWM;7:VI;8:LR;9:LR;10:PPWM;11:PPWM'
+    MS377N: '0:LR;1:PPWM;2:LC;3:LC;4:PPWM;5:LR;6:LC;7:PPWM;8:PPWM;9:LC;10:LC;11:LC;12:VI;13:GM'
+    MS377T: '0:LC;1:PPWM;2:LR;3:LC;4:PPWM;5:PPWM;6:LC;7:LC;8:VI;9:LC;10:GM'
+    MS411: '0:LC;1:LR;2:LC;3:LC;4:PPWM;5:LR;6:LR;7:LC;8:VI;9:LR'
+    MS497I: '0:LC;1:LC;2:LR;3:PPWM;4:LC;5:LC;6:LC;7:VI;8:PPWM;9:LC;10:LR;11:LC;12:PPWM;13:LR'
+    MS497T: '0:LC;1:PPWM;2:LC;3:PPWM;4:VI;5:LR;6:PPWM;7:LC;8:LC;9:PPWM;10:PPWM;11:LC;12:LC;13:LC'
+    MS549H: '0:PPWM;1:LC;2:LR;3:GM;4:LC;5:LC;6:GM;7:GM;8:GM;9:PPWM;10:Ependym;11:GM;12:VI'
+    MS549T: '0:LC;1:LR;2:LR;3:PPWM;4:LC;5:PPWM;6:VI;7:PPWM;8:LC;9:GM;10:LC;11:Ependym'

@@ -16,8 +16,12 @@ import scanpy.external as sce
 
 def plot_heatmap(obsm_key, title, ax, scale=False, flip=False, remove=False, cmap='Blues', figsize=(3, 9), cbar=True, square=False):
     # Compute sign
-    df = dc.rank_sources_groups(obsm_key, groupby='leiden', reference='rest', method='wilcoxon')
-    df = df[(df['statistic'] > 0) & (df['meanchange'] > 0) & (df['pvals_adj'] < 0.05)]
+    has_groups = obsm_key.obs['leiden'].unique().size > 1
+    if has_groups:
+        df = dc.rank_sources_groups(obsm_key, groupby='leiden', reference='rest', method='wilcoxon')
+        df = df[(df['statistic'] > 0) & (df['meanchange'] > 0) & (df['pvals_adj'] < 0.05)]
+    else:
+        df = pd.DataFrame(columns=['group', 'names'])
 
     # Compute mean
     obsm_key = dc.get_pseudobulk(
@@ -29,7 +33,7 @@ def plot_heatmap(obsm_key, title, ax, scale=False, flip=False, remove=False, cma
         mode='mean',
         skip_checks=True
     )
-    if scale:
+    if scale and has_groups:
         sc.pp.scale(obsm_key)
 
     sign = pd.DataFrame(np.empty(obsm_key.shape, dtype = str), index=obsm_key.obs_names, columns=obsm_key.var_names)
@@ -95,6 +99,7 @@ parser.add_argument('-n','--n_hvg', required=True)
 parser.add_argument('-m','--mofa_path', required=True)
 parser.add_argument('-r','--res', required=True)
 parser.add_argument('-c','--colors_dict', required=True)
+parser.add_argument('-a','--annotation', required=True)
 parser.add_argument('-p','--plot_path', required=True)
 
 args = vars(parser.parse_args())
@@ -104,6 +109,7 @@ n_hvg = int(args['n_hvg'])
 mofa_path = args['mofa_path']
 res = float(args['res'])
 colors_dict = args['colors_dict']
+annotation = args['annotation']
 plot_path = args['plot_path']
 
 # Read adata
@@ -175,6 +181,19 @@ adata.obsm['X_umap'] = adata.obsm['X_mofa'].values
 sc.pp.neighbors(adata, use_rep="X_mofa")
 sc.tl.leiden(adata, resolution=res)
 
+# Process annotation and color
+sc.pl.umap(adata=adata, color='leiden')
+if annotation != 'None':
+    annotation = {key: value for key, value in (pair.split(":") for pair in annotation.split(";"))}
+    # Remove cells that are not in annot
+    msk = np.isin(adata.obs['leiden'].values.astype('U'), np.array(list(annotation.keys()), dtype='U'))
+    adata = adata[msk].copy()
+    # Rename obs
+    adata.obs['leiden'] = [annotation[c] for c in adata.obs['leiden']]
+    leiden_dict = colors_dict.copy()
+else:
+    leiden_dict = {k:v for k,v in zip(adata.obs['leiden'].unique(), adata.uns['leiden_colors'])}
+
 # Extract obsms
 props = dc.get_acts(adata, 'props')
 pathway = dc.get_acts(adata, 'pathway')
@@ -195,12 +214,12 @@ ax.set_xlabel('')
 
 # Plot mofa components
 ax = axes[1]
-sc.pl.umap(adata=adata, color='areas', return_fig=False, show=False, ax=ax)
+sc.pl.umap(adata=adata, color='areas', return_fig=False, show=False, ax=ax, palette=colors_dict)
 ax.set_xlabel('F1')
 ax.set_ylabel('F2')
 
 ax = axes[2]
-sc.pl.umap(adata=adata, color='leiden', return_fig=False, show=False, ax=ax)
+sc.pl.umap(adata=adata, color='leiden', return_fig=False, show=False, ax=ax, palette=leiden_dict)
 ax.set_xlabel('F1')
 ax.set_ylabel('F2')
 
@@ -210,10 +229,10 @@ df = df.pivot(index='leiden', columns='areas', values='total_counts')
 stackbar(y=df.values, type_names=df.columns, title='', level_names=df.index, cmap=adata.uns['areas_colors'], ax=ax)
 
 ax = axes[4]
-sc.pl.spatial(adata=adata, color='areas', return_fig=False, show=False, ax=ax, size=1.5, frameon=False)
+sc.pl.spatial(adata=adata, color='areas', return_fig=False, show=False, ax=ax, size=1.5, frameon=False, palette=colors_dict)
 
 ax = axes[5]
-sc.pl.spatial(adata=adata, color='leiden', return_fig=False, show=False, ax=ax, size=1.5, frameon=False)
+sc.pl.spatial(adata=adata, color='leiden', return_fig=False, show=False, ax=ax, size=1.5, frameon=False, palette=leiden_dict)
 
 ax = axes[6]
 sc.pl.spatial(adata=props, color='OL', return_fig=False, show=False, ax=ax, size=1.5, frameon=False)

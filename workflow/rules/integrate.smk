@@ -56,12 +56,27 @@ rule niches_mofa:
         model='data/prc/vs/{vs_sample}/niches_mofa.hdf5'
     params:
         n_hvg=config['sn_integrate']['n_hvg'],
-        colors_dict=config['colors_areas']
+        colors_dict=config['colors_areas'],
+        annotation=lambda w: config['niches_ann'][w.vs_sample]
     resources:
         partition='cpu-multi',
         mem_mb=16000,
         slurm='ntasks-per-node=32'
     shell:
         """
-        python workflow/scripts/integrate/niches_mofa.py -s {input.slide} -n {params.n_hvg} -m {output.model} -r 1.0 -c '{params.colors_dict}' -p {output.plot}
+        python workflow/scripts/integrate/niches_mofa.py -s {input.slide} -n {params.n_hvg} -m {output.model} -r 1.0 -c '{params.colors_dict}' -a '{params.annotation}' -p {output.plot}
+        """
+
+rule cell_states:
+    input:
+        ann='data/prc/sn_annotated.h5ad'
+    output:
+        plot='results/integrate/states_{ctype}.pdf'
+    resources:
+        partition='cpu-multi',
+        mem_mb=32000,
+        slurm='ntasks-per-node=32'
+    shell:
+        """
+        python workflow/scripts/integrate/cell_states.py -i {input} -p {output}
         """

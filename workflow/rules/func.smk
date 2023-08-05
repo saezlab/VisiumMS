@@ -25,10 +25,11 @@ rule sn_pathway:
 rule vs_pathway:
     input:
         inp='data/prc/vs/{vs_sample}/adata.h5ad',
-        gmt='config/c2.cp.reactome.v2023.1.Hs.symbols.gmt'
+        gmt='config/h.all.v2023.1.Hs.symbols.gmt',
+        snp='data/prc/sn_pathway.csv'
     output:
         'data/prc/vs/{vs_sample}/pathway.csv'
     shell:
         """
-        python workflow/scripts/func/vs_pathway.py -s {input.inp} -g {input.gmt} -o {output}
+        python workflow/scripts/func/vs_pathway.py -s {input.inp} -g {input.gmt} -p {input.snp} -o {output}
         """

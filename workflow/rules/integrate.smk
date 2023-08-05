@@ -48,19 +48,20 @@ rule sn_annotate:
 
 rule niches_mofa:
     input:
-        meta="config/meta.csv",
-        hallmarks=expand("data/prc/vs/{vs_sample}/hallmarks.csv", vs_sample=vs_samples),
-        abunds=expand("data/prc/vs/{vs_sample}/abunds.csv", vs_sample=vs_samples)
+        slide="data/prc/vs/{vs_sample}/adata.h5ad",
+        pathway="data/prc/vs/{vs_sample}/pathway.csv",
+        props="data/prc/vs/{vs_sample}/props.csv"
     output:
-        plot='results/integrate/vs_mofa_r2.pdf',
-        model='data/prc/niches_mofa.hdf5'
+        plot='results/integrate/vs_{vs_sample}_mofa.pdf',
+        model='data/prc/vs/{vs_sample}/niches_mofa.hdf5'
     params:
-        n_factors=config['niches_mofa']['n_factors']
+        n_hvg=config['sn_integrate']['n_hvg'],
+        colors_dict=config['colors_areas']
     resources:
         partition='cpu-multi',
-        mem_mb=64000,
-        slurm='ntasks-per-node=64'
+        mem_mb=16000,
+        slurm='ntasks-per-node=32'
     shell:
         """
-        python workflow/scripts/integrate/niches_mofa.py -m {input.meta} -n {params.n_factors} -p {output.plot} -o {output.model}
+        python workflow/scripts/integrate/niches_mofa.py -s {input.slide} -n {params.n_hvg} -m {output.model} -r 1.0 -c '{params.colors_dict}' -p {output.plot}
         """

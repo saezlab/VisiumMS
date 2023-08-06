@@ -101,6 +101,7 @@ parser.add_argument('-r','--res', required=True)
 parser.add_argument('-c','--colors_dict', required=True)
 parser.add_argument('-a','--annotation', required=True)
 parser.add_argument('-p','--plot_path', required=True)
+parser.add_argument('-o','--out_path', required=True)
 
 args = vars(parser.parse_args())
 
@@ -111,6 +112,7 @@ res = float(args['res'])
 colors_dict = args['colors_dict']
 annotation = args['annotation']
 plot_path = args['plot_path']
+out_path = args['out_path']
 
 # Read adata
 colors_dict = dict(item.split('_') for item in colors_dict.strip("'").split(';'))
@@ -259,3 +261,5 @@ for fig in [fig1, fig2]:
     pdf.savefig(fig)
 pdf.close()
 
+# Save obs
+adata.obs[['leiden']].to_csv(out_path)

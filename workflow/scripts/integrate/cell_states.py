@@ -10,17 +10,18 @@ import matplotlib.pyplot as plt
 import matplotlib.backends.backend_pdf
 import scanpy.external as sce
 
-n_hvg = 4096
 resolution = 1.
 
 # Init args
 parser = argparse.ArgumentParser()
 parser.add_argument('-i','--inp_path', required=True)
 parser.add_argument('-p','--plot_path', required=True)
+parser.add_argument('-o','--out_path', required=True)
 args = vars(parser.parse_args())
 
 inp_path = args['inp_path']
 plot_path = args['plot_path']
+out_path = args['out_path']
 
 ctype = os.path.basename(plot_path).replace('states_', '').replace('.pdf', '')
 
@@ -36,6 +37,13 @@ adata.layers['lognorm'] = adata.X.copy()
 msk = adata.obs.groupby('Sample id').count()['total_counts'] >= 5
 keep = msk[msk].index.values.astype('U')
 adata = adata[np.isin(adata.obs['Sample id'], keep), :].copy()
+
+if adata.shape[0] > 1e4:
+    n_hvg = 4096
+elif adata.shape[0] > 1e3:
+    n_hvg = 2048
+else:
+    n_hvg = 1024
 
 sc.pp.highly_variable_genes(adata, batch_key='Sample id')
 batch_msk = np.array(adata.var['highly_variable_nbatches'] > 1)
@@ -200,3 +208,4 @@ for fig in [fig1, fig2, fig3, fig4]:
     pdf.savefig(fig)
 pdf.close()
 
+adata.write(out_path)

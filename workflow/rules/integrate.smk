@@ -52,8 +52,9 @@ rule niches_mofa:
         pathway="data/prc/vs/{vs_sample}/pathway.csv",
         props="data/prc/vs/{vs_sample}/props.csv"
     output:
-        plot='results/integrate/vs_{vs_sample}_mofa.pdf',
-        model='data/prc/vs/{vs_sample}/niches_mofa.hdf5'
+        plot='results/integrate/niches_mofa/{vs_sample}.pdf',
+        model='data/prc/vs/{vs_sample}/niches_mofa.hdf5',
+        out='data/prc/vs/{vs_sample}/niches.csv'
     params:
         n_hvg=config['sn_integrate']['n_hvg'],
         colors_dict=config['colors_areas'],
@@ -64,19 +65,20 @@ rule niches_mofa:
         slurm='ntasks-per-node=32'
     shell:
         """
-        python workflow/scripts/integrate/niches_mofa.py -s {input.slide} -n {params.n_hvg} -m {output.model} -r 1.0 -c '{params.colors_dict}' -a '{params.annotation}' -p {output.plot}
+        python workflow/scripts/integrate/niches_mofa.py -s {input.slide} -n {params.n_hvg} -m {output.model} -r 1.0 -c '{params.colors_dict}' -a '{params.annotation}' -p {output.plot} -o {output.out}
         """
 
 rule cell_states:
     input:
         ann='data/prc/sn_annotated.h5ad'
     output:
-        plot='results/integrate/states_{ctype}.pdf'
+        plot='results/integrate/ctypes/{ctype}.pdf',
+        out='data/prc/ctypes/{ctype}.h5ad'
     resources:
         partition='cpu-multi',
         mem_mb=32000,
         slurm='ntasks-per-node=32'
     shell:
         """
-        python workflow/scripts/integrate/cell_states.py -i {input} -p {output}
+        python workflow/scripts/integrate/cell_states.py -i {input} -p {output.plot} -o {output.out}
         """

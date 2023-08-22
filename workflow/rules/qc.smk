@@ -76,3 +76,15 @@ rule deconv_qc:
         """
         python workflow/scripts/qc/deconv.py -m {input.meta_path} -a {input.ann_path} -s {output.sample} -l {output.leiden}
         """
+
+rule qc_niches_mofa:
+    input:
+        meta='config/meta.csv'
+    params:
+        colors_dict=config['colors_areas']
+    output:
+        'results/qc/niches_mofa.pdf'
+    shell:
+        """
+        python workflow/scripts/qc/niches_mofa.py -m {input.meta} -d '{params.colors_dict}' -p {output}
+        """

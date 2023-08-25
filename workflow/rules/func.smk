@@ -33,3 +33,15 @@ rule vs_pathway:
         """
         python workflow/scripts/func/vs_pathway.py -s {input.inp} -g {input.gmt} -p {input.snp} -o {output}
         """
+
+rule compositions:
+    input:
+        meta='config/meta.csv',
+        ann='data/prc/sn_annotated.h5ad'
+    output:
+        plot='results/composition/props.pdf',
+        table='results/composition/tests.csv'
+    shell:
+        """
+        python workflow/scripts/func/compositions.py -m {input.meta} -a {input.ann} -p {output.plot} -t {output.table}
+        """

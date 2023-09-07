@@ -47,6 +47,7 @@ def do_contrast(cdata, contrast):
             dds,
             contrast=["Lesion type"] + contrast,
             n_cpus=64,
+            cooks_filter=False,
             independent_filter=False
         )
         # Compute Wald test

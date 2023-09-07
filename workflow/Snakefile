@@ -14,7 +14,7 @@ container: "workflow/envs/env.sif"
 
 # Load rules
 rule all:
-    input: expand("data/prc/vs/{vs_sample}/reactome.csv", vs_sample=vs_samples) #'data/prc/niches_mofa.hdf5' #'data/prc/sn_annotated.h5ad'
+    input: expand("data/prc/vs/{vs_sample}/lr_scores.csv", vs_sample=vs_samples) #'data/prc/niches_mofa.hdf5' #'data/prc/sn_annotated.h5ad'
 #expand("data/prc/sn/{sn_sample}/adata.h5ad", sn_sample=sn_samples)
 #expand("results/integrate/vs_{vs_sample}_mofa.pdf", vs_sample=vs_samples)
 #expand("results/integrate/states_{ctype}.pdf", ctype=ctypes)

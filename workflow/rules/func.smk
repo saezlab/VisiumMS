@@ -75,5 +75,5 @@ rule vs_lr:
         lr='data/prc/vs/{vs_sample}/lr_scores.csv'
     shell:
         """
-        python workflow/scripts/func/vs_lr.py -s {input.slide} -t 0.05 -b 50 -o {output.lr}
+        python workflow/scripts/func/vs_lr.py -s {input.slide} -t 0.05 -b 100 -o {output.lr}
         """

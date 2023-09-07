@@ -33,7 +33,7 @@ colors_dict = dict(item.split('_') for item in colors_dict.strip("'").split(';')
 adata = []
 for sample_id in vs_samples:
     slide = sc.read_h5ad('data/prc/vs/{0}/adata.h5ad'.format(sample_id))
-    slide.obsm['pathway'] = pd.read_csv('data/prc/vs/{0}/pathway.csv'.format(sample_id), index_col=0)
+    slide.obsm['pathway'] = pd.read_csv('data/prc/vs/{0}/hallmarks.csv'.format(sample_id), index_col=0)
     slide.obsm['abunds'] = pd.read_csv('data/prc/vs/{0}/abunds.csv'.format(sample_id), index_col=0)
     slide.obsm['props'] = pd.read_csv('data/prc/vs/{0}/props.csv'.format(sample_id), index_col=0)
     slide.obs['niches'] = pd.read_csv('data/prc/vs/{0}/niches.csv'.format(sample_id), index_col=0)

@@ -49,7 +49,7 @@ rule sn_annotate:
 rule niches_mofa:
     input:
         slide="data/prc/vs/{vs_sample}/adata.h5ad",
-        pathway="data/prc/vs/{vs_sample}/pathway.csv",
+        pathway="data/prc/vs/{vs_sample}/hallmarks.csv",
         props="data/prc/vs/{vs_sample}/props.csv"
     output:
         plot='results/integrate/niches_mofa/{vs_sample}.pdf',

@@ -121,7 +121,7 @@ print(sample_id)
 adata = sc.read_h5ad(slide_path)
 adata.uns['areas_colors'] = [colors_dict[c] for c in np.unique(adata.obs['areas'].dropna().values.astype('U'))]
 del adata.uns['log1p']
-adata.obsm['pathway'] = pd.read_csv('data/prc/vs/{0}/pathway.csv'.format(sample_id), index_col=0)
+adata.obsm['pathway'] = pd.read_csv('data/prc/vs/{0}/hallmarks.csv'.format(sample_id), index_col=0)
 adata.obsm['props'] = pd.read_csv('data/prc/vs/{0}/props.csv'.format(sample_id), index_col=0)
 adata.obsm['clr'] = pd.DataFrame(clr(closure(adata.obsm['props'].values)), index=adata.obs_names, columns=adata.obsm['props'].columns)
 

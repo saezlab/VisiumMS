@@ -45,3 +45,15 @@ rule compositions:
         """
         python workflow/scripts/func/compositions.py -m {input.meta} -a {input.ann} -p {output.plot} -t {output.table}
         """
+
+rule sn_lr:
+    input:
+        deg='data/prc/sn_deg.csv',
+        ann='data/prc/sn_annotated.h5ad'
+    output:
+        plot='results/ccc/sn_lr.csv',
+        df='data/prc/sn_lr.csv'
+    shell:
+        """
+        python workflow/scripts/func/sn_lr.py -d {input.deg} -a {input.ann} -p {output.plot} -o {output.df} -s 0.15 -g 0.05
+        """

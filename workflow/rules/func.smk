@@ -57,3 +57,13 @@ rule sn_lr:
         """
         python workflow/scripts/func/sn_lr.py -d {input.deg} -a {input.ann} -p {output.plot} -o {output.df} -s 0.15 -g 0.05
         """
+
+rule vs_lr:
+    input:
+        slide='data/prc/vs/{vs_sample}/adata.h5ad'
+    output:
+        lr='data/prc/vs/{vs_sample}/lr_scores.csv'
+    shell:
+        """
+        python workflow/scripts/func/vs_lr.py -s {input.slide} -t 0.05 -b 50 -o {output.lr}
+        """

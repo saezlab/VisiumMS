@@ -77,3 +77,29 @@ rule vs_lr:
         """
         python workflow/scripts/func/vs_lr.py -s {input.slide} -t 0.05 -b 100 -o {output.lr}
         """
+
+rule run_misty:
+    input:
+        sn_lr='data/prc/sn_lr.csv',
+        sn_pw='data/prc/sn_pathway.csv',
+        slide='data/prc/vs/{vs_sample}/adata.h5ad',
+        vs_lr='data/prc/vs/{vs_sample}/lr_scores.csv',
+        props='data/prc/vs/{vs_sample}/props.csv',
+        react='data/prc/vs/{vs_sample}/reactome.csv',
+    output:
+        inters='data/prc/vs/{vs_sample}/misty_inters.csv',
+        metrics='data/prc/vs/{vs_sample}/misty_metrics.csv'
+    shell:
+        """
+        python workflow/scripts/func/run_misty.py \
+        -d {input.sn_lr} \
+        -w {input.sn_pw} \
+        -s {input.slide} \
+        -l {input.vs_lr} \
+        -p {input.props} \
+        -r {input.react} \
+        -a 0.15 \
+        -b 100 \
+        -i {output.inters} \
+        -t {output.metrics}
+        """

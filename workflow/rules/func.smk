@@ -61,21 +61,23 @@ rule sn_lr:
         deg='data/prc/sn_deg.csv',
         ann='data/prc/sn_annotated.h5ad'
     output:
-        plot='results/ccc/sn_lr.csv',
+        plot='results/ccc/sn_lr.pdf',
         df='data/prc/sn_lr.csv'
     shell:
         """
         python workflow/scripts/func/sn_lr.py -d {input.deg} -a {input.ann} -p {output.plot} -o {output.df} -s 0.15 -g 0.05
         """
 
-rule vs_lr:
+rule vs_ctlr:
     input:
-        slide='data/prc/vs/{vs_sample}/adata.h5ad'
+        slide='data/prc/vs/{vs_sample}/adata.h5ad',
+        props='data/prc/vs/{vs_sample}/props.csv',
+        sn_lr='data/prc/sn_lr.csv'
     output:
-        lr='data/prc/vs/{vs_sample}/lr_scores.csv'
+        lr='data/prc/vs/{vs_sample}/ctlr_scores.csv'
     shell:
         """
-        python workflow/scripts/func/vs_lr.py -s {input.slide} -t 0.05 -b 100 -o {output.lr}
+        python workflow/scripts/func/vs_ctlr.py -s {input.slide} -p {input.props} -n {input.sn_lr} -b 100 -o {output.lr}
         """
 
 rule run_misty:

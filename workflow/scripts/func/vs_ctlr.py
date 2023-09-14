@@ -26,14 +26,7 @@ out_path = args['out_path']
 # Read func results for sn
 sn_lr = pd.read_csv(sn_lr_path)
 
-# Generate feature universes
-lr_universe = (
-    sn_lr
-    .rename(columns={'receptor_complex': 'receptor', 'ligand_complex': 'ligand'})
-    [['ligand', 'receptor']]
-    .assign(ligand=lambda x: x['ligand'].str.split('_').str[0], receptor=lambda x: x['receptor'].str.split('_').str[0])
-    .drop_duplicates()
-)
+# Generate feature universe
 sn_ctlr = (
     sn_lr
     .rename(columns={'receptor_complex': 'receptor', 'ligand_complex': 'ligand'})
@@ -41,14 +34,20 @@ sn_ctlr = (
     .assign(ligand=lambda x: x['ligand'].str.split('_').str[0], receptor=lambda x: x['receptor'].str.split('_').str[0])
     .drop_duplicates()
 )
-lr_universe = [x[1:] for x in lr_universe.itertuples()]
-ct_universe = [x[1:] for x in sn_lr[['source', 'target']].drop_duplicates().itertuples()]
+it_universe = [x[1:] for x in sn_ctlr.itertuples()]
 
 # Read slide
 slide = sc.read_h5ad(sample_path)
+slide.X = (slide.X > 0) * 1
 props = AnnData(pd.read_csv(props_path, index_col=0), dtype=float)
+props.X = (props.X > 0.11) * 1
 props.obsm['spatial'] = slide.obsm['spatial'].copy()
 props.uns['spatial'] = slide.uns['spatial'].copy()
+
+# Merge features
+merged = ad.concat([slide, props], axis=1)
+merged.obsm['spatial'] = slide.obsm['spatial'].copy()
+merged.uns['spatial'] = slide.uns['spatial'].copy()
 
 # Compute local spatial product score
 def spatial_prod(adata, interactions, sep='^'):
@@ -58,16 +57,15 @@ def spatial_prod(adata, interactions, sep='^'):
         X = X.A
     conn = adata.obsp['spatial_connectivities']
     X = (conn @ X) / conn.sum(axis=1).A  # Normalize by spatial weights
+    X = X / np.max(X, axis=0)  # Make features comparable
     new_X = np.zeros((X.shape[0], len(interactions)))
     vars = list(adata.var_names)
     cols = []
     for i, interaction in enumerate(tqdm(interactions)):
-        a, b = interaction
-        if (a in vars) and (b in vars):
-            idx_a = vars.index(a)
-            idx_b = vars.index(b)
-            new_X[:, i] = X[:, idx_a] * X[:, idx_b]  # Product
-        cols.append('{0}{1}{2}'.format(a, sep, b))
+        if np.all(np.isin(interaction, vars)):
+            idxs = np.unique([vars.index(a) for a in interaction])  # Make unique
+            new_X[:, i] = np.prod(X[:, idxs], axis=1)
+        cols.append('{0}'.format(sep).join(interaction))
 
     new_adata = AnnData(pd.DataFrame(
         new_X,
@@ -78,23 +76,9 @@ def spatial_prod(adata, interactions, sep='^'):
     new_adata.uns['spatial'] = slide.uns['spatial'].copy()
     return new_adata
 
-# Compute cell type scores
-li.ut.spatial_neighbors(props, bandwidth=bandwidth, cutoff=0.1, kernel='gaussian', set_diag=True)
-ct_res = spatial_prod(props, ct_universe)
-
-# Compute ligand receptor scores
-li.ut.spatial_neighbors(slide, bandwidth=bandwidth, cutoff=0.1, kernel='gaussian', set_diag=True)
-lr_res = spatial_prod(slide, lr_universe)
-
-# Merge results
-ctlr_slide = ad.concat([ct_res, lr_res], axis=1)
-ctlr_slide.obsm['spatial'] = slide.obsm['spatial'].copy()
-ctlr_slide.uns['spatial'] = slide.uns['spatial'].copy()
-it_universe = [('^'.join(x[1:3]), '^'.join(x[3:])) for x in sn_ctlr.itertuples()]
-
 # Compute cell type + ligand-receptor scores
-li.ut.spatial_neighbors(ctlr_slide, bandwidth=bandwidth, cutoff=0.1, kernel='gaussian', set_diag=True)
-ctlr_res = spatial_prod(ctlr_slide, it_universe, sep='|')
+li.ut.spatial_neighbors(merged, bandwidth=bandwidth, cutoff=0.1, kernel='gaussian', set_diag=True)
+ctlr_res = spatial_prod(merged, it_universe, sep='^')
 
 # Save to csv
 ctlr_res.to_df().to_csv(out_path)

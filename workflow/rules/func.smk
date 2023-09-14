@@ -77,7 +77,19 @@ rule vs_ctlr:
         lr='data/prc/vs/{vs_sample}/ctlr_scores.csv'
     shell:
         """
-        python workflow/scripts/func/vs_ctlr.py -s {input.slide} -p {input.props} -n {input.sn_lr} -b 100 -o {output.lr}
+        python workflow/scripts/func/vs_ctlr.py -s {input.slide} -p {input.props} -n {input.sn_lr} -b 150 -o {output.lr}
+        """
+
+rule test_ctlr:
+    input:
+        slides=expand('data/prc/vs/{vs_sample}/ctlr_scores.csv', vs_sample=vs_samples),
+        sn_lr='data/prc/sn_lr.csv',
+        meta='config/meta.csv'
+    output:
+        'data/prc/vs_diff_ctlr.csv'
+    shell:
+        """
+        python workflow/scripts/func/test_ctlr.py -n {input.sn_lr} -m {input.meta} -p 0.15 -o {output}
         """
 
 rule run_misty:

@@ -92,6 +92,18 @@ rule test_ctlr:
         python workflow/scripts/func/test_ctlr.py -n {input.sn_lr} -m {input.meta} -p 0.15 -o {output}
         """
 
+rule corr_ctlr_pw:
+    input:
+        c='data/prc/vs_diff_ctlr.csv',
+        p='data/prc/sn_pathway.csv',
+        m='config/meta.csv'
+    output:
+        'data/prc/corr_ctlr_pw.csv'
+    shell:
+        """
+        python workflow/scripts/func/corr_ctlr_pw.py -c {input.c} -p {input.p} -m {input.m} -t 0.10 -a 0.15 -o {output}
+        """
+
 rule run_misty:
     input:
         sn_lr='data/prc/sn_lr.csv',

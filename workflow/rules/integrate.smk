@@ -82,3 +82,21 @@ rule cell_states:
         """
         python workflow/scripts/integrate/cell_states.py -i {input} -p {output.plot} -o {output.out}
         """
+
+rule cs_annotate:
+    input:
+        adata='data/prc/ctypes/{ctype}.h5ad',
+        cstates='config/cellstates.csv'
+    output:
+        plot='results/integrate/cell_states/{ctype}.pdf',
+        ann='data/prc/ctypes/{ctype}_ann.csv',
+        deg='data/prc/ctypes/{ctype}_deg.csv'
+    shell:
+        """
+        python workflow/scripts/integrate/cs_annotate.py \
+        -d {input.adata} \
+        -c {input.cstates} \
+        -p {output.plot} \
+        -a {output.ann} \
+        -g {output.deg}
+        """

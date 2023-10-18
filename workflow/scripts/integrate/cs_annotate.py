@@ -60,7 +60,7 @@ sc.tl.rank_genes_groups(adata, groupby='cell_states', method='t-test_overestim_v
 deg = sc.get.rank_genes_groups_df(adata, group=None)
 
 # Filter deg to keep marker genes
-deg = deg[(deg['pvals_adj'] < 0.01) & (deg['logfoldchanges'] > 1)]
+deg = deg[(deg['pvals_adj'] < 0.05) & (deg['logfoldchanges'] > 0.5)]
 
 # Umap and dotplot
 fig1, axes = plt.subplots(1, 2, figsize=(12, 5), tight_layout=True, dpi=150, gridspec_kw={'width_ratios': [1, 2]})

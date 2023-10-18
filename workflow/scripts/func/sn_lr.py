@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import decoupler as dc
 import plotnine as p9
 import liana as li
 import matplotlib.backends.backend_pdf
@@ -39,7 +40,7 @@ for contrast in contrasts:
     print(contrast)
 
     # Subset deg
-    cdeg = deg[(deg['contrast'] == contrast)]
+    cdeg = deg[(deg['contrast'] == contrast)].copy()
 
     # Compute LR scores based on DEG results
     c_lr = li.multi.df_to_lr(
@@ -73,7 +74,39 @@ for contrast in contrasts:
         .assign(sign=lambda x: np.sign(x['ligand_stat']))
     )
     c_lr.insert(0, 'contrast', contrast)
-    
+
+    # Compute LR scores based on expr for cell types with no contrast
+    cond, ref = contrast.split('vs')
+    if ref == 'Ctrl':
+        # Subset adata
+        sub_adata = adata[adata.obs['Lesion type'] == cond].copy()
+
+        # Run rank_aggregate
+        li.mt.rank_aggregate(
+            sub_adata,
+            groupby='leiden',
+            expr_prop=thr_gexprop,
+            verbose=True,
+            use_raw=False,
+            n_perms=None
+        )
+
+        # Extract results and format
+        df = sub_adata.uns['liana_res'].copy()
+        df['interaction_padj'] = dc.p_adjust_fdr(df['magnitude_rank'])
+        df = df[((df['source'].str.contains('BC|TC')) | (df['target'].str.contains('BC|TC'))) & (df['interaction_padj'] < thr_adjpval)]
+        df['contrast'] = contrast
+        df['interaction'] = [x + '^' + y for x, y in zip(df['ligand_complex'], df['receptor_complex'])]
+        df['ligand_stat'] = df['expr_prod']
+        df['receptor_stat'] = df['expr_prod']
+        df['interaction_stat'] = df['expr_prod']
+        df['ligand_padj'] = df['interaction_padj']
+        df['receptor_padj'] = df['interaction_padj']
+        df['sign'] = +1
+        df = df[['contrast', 'source', 'target', 'ligand_complex', 'receptor_complex', 'interaction', 'ligand_stat',
+                 'ligand_padj', 'receptor_stat', 'receptor_padj', 'interaction_stat', 'interaction_padj', 'sign']]
+        c_lr = pd.concat([c_lr, df])
+
     # Plot
     fig = li.pl.tileplot(
         liana_res=c_lr,

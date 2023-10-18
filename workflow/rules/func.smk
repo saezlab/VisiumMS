@@ -11,6 +11,32 @@ rule sn_deg:
         python workflow/scripts/func/sn_deg.py -i {input} -o {output}
         """
 
+rule vs_deg:
+    input:
+        m='config/meta.csv',
+        n=expand("data/prc/vs/{vs_sample}/niches.csv", vs_sample=vs_samples)
+    output:
+        'data/prc/vs_deg.csv'
+    resources:
+        partition='cpu-multi',
+        slurm='ntasks-per-node=64'        
+    shell:
+        """
+        python workflow/scripts/func/vs_deg.py -m {input.m} -o {output}
+        """
+
+rule vs_traj:
+    input:
+        m='config/meta.csv',
+        n=expand("data/prc/vs/{vs_sample}/niches.csv", vs_sample=vs_samples)
+    output:
+        o='data/prc/vs_traj.csv',
+        p='results/traj/vs_traj.pdf'
+    shell:
+        """
+        python workflow/scripts/func/vs_traj.py -m {input.m} -o {output.o} -p {output.p}
+        """
+
 rule sn_pathway:
     input:
         inp='data/prc/sn_deg.csv',
@@ -47,13 +73,17 @@ rule vs_pathway_reactome:
 rule compositions:
     input:
         meta='config/meta.csv',
-        ann='data/prc/sn_annotated.h5ad'
+        ann='data/prc/sn_annotated.h5ad',
+        cs='config/cellstates.csv'
     output:
         plot='results/composition/props.pdf',
-        table='results/composition/tests.csv'
+        table='results/composition/table.csv'
+    resources:
+        partition='cpu-multi',
+        slurm='ntasks-per-node=64'
     shell:
         """
-        python workflow/scripts/func/compositions.py -m {input.meta} -a {input.ann} -p {output.plot} -t {output.table}
+        python workflow/scripts/func/compositions.py -m {input.meta} -a {input.ann} -s {input.cs} -p {output.plot} -t {output.table}
         """
 
 rule sn_lr:
@@ -63,6 +93,8 @@ rule sn_lr:
     output:
         plot='results/ccc/sn_lr.pdf',
         df='data/prc/sn_lr.csv'
+    resources:
+        mem_mb=32000
     shell:
         """
         python workflow/scripts/func/sn_lr.py -d {input.deg} -a {input.ann} -p {output.plot} -o {output.df} -s 0.15 -g 0.05

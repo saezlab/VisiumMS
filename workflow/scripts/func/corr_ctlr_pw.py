@@ -102,8 +102,9 @@ def get_pairs_corrs(pairs, contrasts, ctrl, sn_pw, thr_score=0.10):
             # Compute corr
             corr = get_corr(sub_lr_scores, sub_pw_scores)
             corrs.append(corr)
-    corrs = pd.concat(corrs)
-    return corrs
+    if corrs:
+        corrs = pd.concat(corrs)
+        return corrs
 
 
 lt_dict = {
@@ -145,9 +146,10 @@ for sample_id in vs_samples:
     pairs = ctrl['pairs'].unique()
     
     corr  = get_pairs_corrs(pairs, contrasts, ctrl, sn_pw, thr_score=thr_score)
-    corr['sample_id'] = sample_id
-    corr['lesion_type'] = lesion_type
-    corrs.append(corr)
+    if corr is not None:
+        corr['sample_id'] = sample_id
+        corr['lesion_type'] = lesion_type
+        corrs.append(corr)
 corrs = pd.concat(corrs)
 
 # Summarize pws across slides

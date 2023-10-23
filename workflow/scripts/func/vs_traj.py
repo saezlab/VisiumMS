@@ -16,11 +16,13 @@ plt.rcParams['axes.axisbelow'] = True
 # Init args
 parser = argparse.ArgumentParser()
 parser.add_argument('-m','--meta_path', required=True)
+parser.add_argument('-r','--pres_path', required=True)
 parser.add_argument('-o','--out_path', required=True)
 parser.add_argument('-p','--plot_path', required=True)
 args = vars(parser.parse_args())
 
 meta_path = args['meta_path']
+pres_path = args['pres_path']
 out_path = args['out_path']
 plot_path = args['plot_path']
 
@@ -202,6 +204,9 @@ fig7 = fig7.fig
 
 net = dc.read_gmt('config/c2.cp.reactome.v2023.1.Hs.symbols.gmt')
 net['source'] = [s.split('REACTOME')[1].replace('_', ' ').lstrip() for s in net['source']]
+pw = pd.read_csv(pres_path)
+pw = pw[pw['pvals'] < 0.15]['source'].unique().astype(str)
+net = net[np.isin(net['source'], pw)]
 
 genes = pd.DataFrame(index=df[df['cat'] == '1']['name'])
 

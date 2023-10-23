@@ -70,6 +70,7 @@ axes = axes.ravel()
 ax = axes[0]
 sc.pl.umap(adata, color='cell_states', return_fig=False, show=False, ax=ax, frameon=False, size=20)
 ax.set_title('')
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False, ncols=1)
 
 # Dotplot
 ax = axes[1]

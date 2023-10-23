@@ -25,18 +25,6 @@ rule vs_deg:
         python workflow/scripts/func/vs_deg.py -m {input.m} -o {output}
         """
 
-rule vs_traj:
-    input:
-        m='config/meta.csv',
-        n=expand("data/prc/vs/{vs_sample}/niches.csv", vs_sample=vs_samples)
-    output:
-        o='data/prc/vs_traj.csv',
-        p='results/traj/vs_traj.pdf'
-    shell:
-        """
-        python workflow/scripts/func/vs_traj.py -m {input.m} -o {output.o} -p {output.p}
-        """
-
 rule sn_pathway:
     input:
         inp='data/prc/sn_deg.csv',
@@ -46,6 +34,32 @@ rule sn_pathway:
     shell:
         """
         python workflow/scripts/func/sn_pathway.py -i {input.inp} -g {input.gmt} -o {output}
+        """
+
+rule vs_traj:
+    input:
+        m='config/meta.csv',
+        n=expand("data/prc/vs/{vs_sample}/niches.csv", vs_sample=vs_samples),
+        r='data/prc/sn_pathway.csv'
+    output:
+        o='data/prc/vs_traj.csv',
+        p='results/traj/vs_traj.pdf'
+    shell:
+        """
+        python workflow/scripts/func/vs_traj.py -m {input.m} -r {input.r} -o {output.o} -p {output.p}
+        """
+
+rule sn_traj:
+    input:
+        a='data/prc/sn_annotated.h5ad',
+        n='config/c2.cp.reactome.v2023.1.Hs.symbols.gmt',
+        r='data/prc/sn_pathway.csv'
+    output:
+        o='data/prc/sn_traj.csv',
+        p='results/traj/sn_traj.pdf'
+    shell:
+        """
+        python workflow/scripts/func/sn_traj.py -a {input.a} -n {input.n} -r {input.r} -o {output.o} -p {output.p}
         """
 
 rule vs_pathway_hallmarks:
@@ -74,13 +88,15 @@ rule compositions:
     input:
         meta='config/meta.csv',
         ann='data/prc/sn_annotated.h5ad',
-        cs='config/cellstates.csv'
+        cs='config/cellstates.csv',
+        deg=expand("data/prc/ctypes/{ctype}_deg.csv", ctype=ctypes)
     output:
         plot='results/composition/props.pdf',
         table='results/composition/table.csv'
     resources:
         partition='cpu-multi',
-        slurm='ntasks-per-node=64'
+        slurm='ntasks-per-node=64',
+        runtime=120
     shell:
         """
         python workflow/scripts/func/compositions.py -m {input.meta} -a {input.ann} -s {input.cs} -p {output.plot} -t {output.table}
@@ -134,6 +150,28 @@ rule corr_ctlr_pw:
     shell:
         """
         python workflow/scripts/func/corr_ctlr_pw.py -c {input.c} -p {input.p} -m {input.m} -t 0.10 -a 0.15 -o {output}
+        """
+
+rule cs_ctlr:
+    input:
+        g='config/markers.csv',
+        t='results/composition/table.csv',
+        s='data/prc/sn_lr.csv',
+        c='data/prc/vs_diff_ctlr.csv',
+        m='config/meta.csv'
+    output:
+        o='data/prc/cs_ctlr.csv',
+        p='results/ccc/cs_ctlr.pdf'
+    shell:
+        """
+        python workflow/scripts/func/cs_ctlr.py \
+        -g {input.g} \
+        -t {input.t} \
+        -s {input.s} \
+        -c {input.c} \
+        -m {input.m} \
+        -o {output.o} \
+        -p {output.p}
         """
 
 rule run_misty:

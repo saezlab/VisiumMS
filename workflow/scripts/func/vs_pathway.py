@@ -22,11 +22,16 @@ out_path = args['out_path']
 slide = sc.read_h5ad(slide_path)
 
 # Read reactome and filter by sign
-gmt = dc.read_gmt(gmt_path)
-gmt['source'] = [s.split(db_name)[1].replace('_', ' ').lstrip() for s in gmt['source']]
+if db_name != 'progeny':
+    gmt = dc.read_gmt(gmt_path)
+    gmt['source'] = [s.split(db_name)[1].replace('_', ' ').lstrip() for s in gmt['source']]
+    weight = None
+else:
+    gmt = pd.read_csv(gmt_path).groupby('source', observed=True).head(1000)
+    weight = 'weight'
 
 # Run enrichment analysis
-dc.run_ulm(slide, gmt, weight=None, use_raw=False)
+dc.run_ulm(slide, gmt, weight=weight, use_raw=False)
 
 # Save
 slide.obsm['ulm_estimate'].to_csv(out_path)

@@ -14,7 +14,8 @@ container: "workflow/envs/env.sif"
 
 # Load rules
 rule all:
-    input: expand("data/prc/ctypes/{ctype}_deg.csv", ctype=ctypes)
+    input: expand('data/prc/vs/{vs_sample}/progeny.csv', vs_sample=vs_samples)
+#expand("data/prc/ctypes/{ctype}_deg.csv", ctype=ctypes)
 #'data/prc/niches_mofa.hdf5' #'data/prc/sn_annotated.h5ad'
 #expand("data/prc/vs/{vs_sample}/ctlr_scores.csv", vs_sample=vs_samples)
 #expand("data/prc/sn/{sn_sample}/adata.h5ad", sn_sample=sn_samples)
@@ -31,5 +32,6 @@ include: "rules/integrate.smk"
 include: "rules/atlases.smk"
 #include: "rules/deconv.smk"
 include: "rules/func.smk"
+include: "rules/figures.smk"
 
 # snakemake --profile config/slurm/

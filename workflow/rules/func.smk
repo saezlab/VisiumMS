@@ -25,6 +25,20 @@ rule vs_deg:
         python workflow/scripts/func/vs_deg.py -m {input.m} -o {output}
         """
 
+rule ns_deg:
+    input:
+        m='config/meta.csv',
+        n=expand("data/prc/vs/{vs_sample}/niches.csv", vs_sample=vs_samples)
+    output:
+        'data/prc/ns_deg.csv'
+    resources:
+        partition='cpu-multi',
+        slurm='ntasks-per-node=64'        
+    shell:
+        """
+        python workflow/scripts/func/ns_deg.py -m {input.m} -o {output}
+        """
+
 rule sn_pathway:
     input:
         inp='data/prc/sn_deg.csv',
@@ -82,6 +96,17 @@ rule vs_pathway_reactome:
     shell:
         """
         python workflow/scripts/func/vs_pathway.py -s {input.inp} -g {input.gmt} -n 'REACTOME' -o {output}
+        """
+
+rule vs_pathway_progeny:
+    input:
+        inp='data/prc/vs/{vs_sample}/adata.h5ad',
+        gmt='config/progeny.csv'
+    output:
+        'data/prc/vs/{vs_sample}/progeny.csv'
+    shell:
+        """
+        python workflow/scripts/func/vs_pathway.py -s {input.inp} -g {input.gmt} -n 'progeny' -o {output}
         """
 
 rule compositions:

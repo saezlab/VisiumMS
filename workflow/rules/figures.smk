@@ -20,3 +20,24 @@ rule fig1_niches_markers:
         """
         python workflow/scripts/figures/fig1/niches_markers.py -m '{input.m}' -p {output}
         """
+
+rule fig2_asc:
+    input:
+        o='data/prc/ctypes/AS.h5ad',
+        a='data/prc/ctypes/AS_ann.csv',
+        m='config/meta.csv',
+        r='config/c2.cp.reactome.v2023.1.Hs.symbols.gmt',
+        c='config/collectri.csv',
+    output:
+        'results/figures/fig2/asc.pdf'
+    shell:
+        """
+        python workflow/scripts/figures/fig2/asc.py \
+        -o '{input.o}' \
+        -a '{input.a}' \
+        -m '{input.m}' \
+        -r '{input.r}' \
+        -c '{input.c}' \
+        -m '{input.m}' \
+        -p {output}
+        """

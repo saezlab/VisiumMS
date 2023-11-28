@@ -9,20 +9,25 @@ library(scater)
 library(edgeR)
 library(tidyverse)
 
+pb_data_file <- "./submission/data/MOFAcell_pb_data.csv"
+coldata_file <- "./submission/data/MOFAcell_pb_coldata.csv"
+
 # Importing pb data
-pb_data <- read_csv("./data/pb_data.csv", show_col_types = FALSE) %>%
+pb_data <- read_csv(pb_data_file, show_col_types = FALSE) %>%
   as.data.frame()
 rownames(pb_data) <- gsub("_c", "c", pb_data[,1])
 pb_data <- pb_data[, -1]
 pb_data <- as.matrix(pb_data) %>% t()
 
 # Importing coldata of the matrices
-coldat <- read_csv("./data/pb_coldata.csv",
+coldat <- read_csv(coldata_file,
                    show_col_types = FALSE)[,-1] %>%
   dplyr::mutate(colname = gsub("_c", "c", colname)) %>%
+  dplyr::rename(cell_types = "leiden") %>%
   dplyr::mutate(cell_types = gsub("_c", "c", cell_types)) %>%
   column_to_rownames("colname") %>%
   dplyr::rename(cell_counts = "counts")
+
 
 pb_data <- pb_data[,rownames(coldat)]
 
@@ -72,6 +77,6 @@ de_res <- de_res %>%
 de_res %>%
   dplyr::filter(logFC > 0) %>%
   arrange(name, FDR, - logFC) %>%
-  write_csv(file = "./data/edgeR_cellmrkrs.csv")
+  write_csv(file = "./submission/data/edgeR_cellmrkrs.csv")
 
 

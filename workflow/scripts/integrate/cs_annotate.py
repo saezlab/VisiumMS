@@ -55,6 +55,9 @@ adata.obs['cell_states'] = pd.Categorical(
     ordered=True
 )
 
+ann_df = adata.obs[['cell_states']]
+adata = adata[~adata.obs['cell_states'].str.endswith('_NA'), :].copy()
+
 # Compute DEG
 sc.tl.rank_genes_groups(adata, groupby='cell_states', method='t-test_overestim_var')
 deg = sc.get.rank_genes_groups_df(adata, group=None)
@@ -62,18 +65,14 @@ deg = sc.get.rank_genes_groups_df(adata, group=None)
 # Filter deg to keep marker genes
 deg = deg[(deg['pvals_adj'] < 0.05) & (deg['logfoldchanges'] > 0.5)]
 
-# Umap and dotplot
-fig1, axes = plt.subplots(1, 2, figsize=(12, 5), tight_layout=True, dpi=150, gridspec_kw={'width_ratios': [1, 2]})
-axes = axes.ravel()
-
 # UMAP
-ax = axes[0]
-sc.pl.umap(adata, color='cell_states', return_fig=False, show=False, ax=ax, frameon=False, size=20)
+fig0, ax = plt.subplots(1, 1, figsize=(4, 3), tight_layout=True, dpi=150)
+sc.pl.umap(adata, color='cell_states', return_fig=False, show=False, ax=ax, frameon=False)
 ax.set_title('')
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False, ncols=1)
 
 # Dotplot
-ax = axes[1]
+fig1, ax = plt.subplots(1, 1, figsize=(8, 4), tight_layout=True, dpi=150)
 if 'dendrogram_cell_states' in adata.uns:
     del adata.uns['dendrogram_cell_states']
 sc.pl.dotplot(adata, markers, 'cell_states', dendrogram=False, ax=ax, return_fig=False, show=False, dot_max=0.5, standard_scale='var')
@@ -120,10 +119,10 @@ stackbar(y=df.values, type_names=df.columns, title='Cluster representation', lev
 
 # Save to pdf
 pdf = matplotlib.backends.backend_pdf.PdfPages(plot_path)
-for fig in [fig1, fig2]:
+for fig in [fig0, fig1, fig2]:
     pdf.savefig(fig)
 pdf.close()
 
 # Save results
-adata.obs[['cell_states']].to_csv(ann_path)
+ann_df.to_csv(ann_path)
 deg.to_csv(deg_path, index=False)

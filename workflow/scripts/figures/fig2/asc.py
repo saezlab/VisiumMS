@@ -169,7 +169,7 @@ fig5 = dc.plot_dotplot(
     s='Odds ratio',
     c='FDR p-value',
     scale=0.15,
-    figsize=(3.5, 3.5),
+    figsize=(2, 4),
     return_fig=True,
     dpi=150
 )
@@ -186,27 +186,36 @@ glist = ['FOXJ1', 'REST', 'TBX1']
 for i in range(len(glist)):
     plot_violin(adata=act, gene=glist[i], ax=axes[i], palette=None)
 
-def plot_where_func(sample_id, markers, net, name):
+def plot_where_func(sample_id, markers, net, name, is_tf=True):
     slide = read_slide(sample_id)
     dc.run_ulm(slide, net=markers, source='group', target='names', weight=None, use_raw=False)
     act = dc.get_acts(slide, 'ulm_estimate')
     c_msk = (slide.obsm['props']['AS'] > 0.25).values.ravel()
     a_msk = ((slide.obsm['ulm_pvals'] < 0.05) & (slide.obsm['ulm_estimate'] > 0)).values.ravel()
-    # tfs
-    if 'weight' in net.columns:
-        weight = 'weight'
+    if is_tf:
+        # tfs
+        if 'weight' in net.columns:
+            weight = 'weight'
+        else:
+            weight = None
+        dc.run_ulm(slide, net=net, weight=weight, use_raw=False)
+        tf = dc.get_acts(slide, 'ulm_estimate')
+        tf[~(c_msk * a_msk), name].X = np.nan
+        fig, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=300)
+        sc.pl.spatial(tf, color=name, size=1.75, cmap='RdBu_r', ax=ax, colorbar_loc='right',
+                      show=False, frameon=False, title=name, na_color='slategray', vcenter=0)
     else:
-        weight = None
-    dc.run_ulm(slide, net=net, weight=weight, use_raw=False)
-    tf = dc.get_acts(slide, 'ulm_estimate')
-    tf[~(c_msk * a_msk), name].X = np.nan
-    fig, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=300)
-    sc.pl.spatial(tf, color=name, size=1.75, cmap='RdBu_r', ax=ax, colorbar_loc='right', show=False, frameon=False, title='', na_color='slategray', vcenter=0)
+        slide[~(c_msk * a_msk), name].X = np.nan
+        fig, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=300)
+        sc.pl.spatial(slide, color=name, size=1.75, cmap='viridis', ax=ax, colorbar_loc='right',
+                      show=False, frameon=False, title=name, na_color='slategray')
     return fig
 
 fig7 = plot_where_func('MS411', df, clt, name='FOXJ1')
 fig8 = plot_where_func('MS411', df, gmt, name='CILIUM ASSEMBLY')
-
+fig9 = plot_where_func('MS411', df, clt, name='FOXJ1', is_tf=False)
+fig10 = plot_where_func('MS411', df, clt, name='CETN2', is_tf=False)
+fig11 = plot_where_func('MS411', df, clt, name='SERPINA3', is_tf=False)
 
 # Plot net
 obs = dc.get_pseudobulk(
@@ -218,7 +227,7 @@ obs = dc.get_pseudobulk(
     mode='mean'
 )['AS_C'].to_df()
 act, _ = dc.run_ulm(obs, net=clt)
-fig9 = dc.plot_network(
+fig12 = dc.plot_network(
     obs=obs,
     act=act,
     net=clt,
@@ -237,6 +246,6 @@ fig9 = dc.plot_network(
 
 # Save to pdf
 pdf = matplotlib.backends.backend_pdf.PdfPages(plot_path)
-for fig in [fig1, fig2, fig3, fig4, fig5, fig6, fig7, fig8, fig9]:
+for fig in [fig1, fig2, fig3, fig4, fig5, fig6, fig7, fig8, fig9, fig10, fig11, fig12]:
     pdf.savefig(fig, bbox_inches='tight')
 pdf.close()

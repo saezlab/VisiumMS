@@ -34,5 +34,6 @@ include: "rules/atlases.smk"
 #include: "rules/deconv.smk"
 include: "rules/func.smk"
 include: "rules/figures.smk"
+include: "rules/mofacell.smk"
 
 # snakemake --profile config/slurm/

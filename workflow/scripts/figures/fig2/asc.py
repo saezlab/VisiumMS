@@ -63,9 +63,9 @@ def plot_violin(adata, gene, ax, palette):
     ax.get_legend().remove()
 
 # Plot top marker genes
-fig1, axes = plt.subplots(2, 2, figsize=(3.5, 3), tight_layout=True, dpi=150)
+fig1, axes = plt.subplots(2, 3, figsize=(5, 3), tight_layout=True, dpi=150)
 axes = axes.ravel()
-glist = df['names'].values[:4].astype('U')
+glist = list(df['names'].values[:6].astype('U'))
 palette={'rest': 'tab:gray', 'AS_C': 'tab:green'}
 for i in range(len(glist)):
     plot_violin(adata=adata, gene=glist[i], ax=axes[i], palette=palette)
@@ -231,9 +231,9 @@ fig12 = dc.plot_network(
     obs=obs,
     act=act,
     net=clt,
-    n_sources=['FOXJ1', 'REST', 'TBX1'],
-    n_targets=10,
-    node_size=1.15,
+    n_sources=['FOXJ1'],
+    n_targets=50,
+    node_size=1.,
     figsize=(3, 4),
     c_pos_w='#9b2531',
     c_neg_w='#233c55',

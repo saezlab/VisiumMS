@@ -41,3 +41,18 @@ rule fig2_asc:
         -m '{input.m}' \
         -p {output}
         """
+
+rule fig3_mds:
+    input:
+        a=expand("data/prc/vs/{vs_sample}/niches.csv", vs_sample=vs_samples),
+        b='data/prc/sn_annotated.h5ad',
+        c='config/meta.csv',
+        d='data/prc/mofacell/sn_factors.csv',
+        e='data/prc/mofacell/vs_factors.csv',
+    output:
+        'results/figures/fig3/mds.pdf'
+    shell:
+        """
+        python workflow/scripts/figures/fig3/mds.py \
+        -b {input.b} -c {input.c} -d {input.d} -e {input.e} -f {output}
+        """

@@ -69,3 +69,27 @@ rule fig3_pwheatmaps:
         python workflow/scripts/figures/fig3/pwheatmaps.py \
         -a {input.a} -b {input.b} -c {input.c} -d {output}
         """
+
+rule fig3_gmarkers:
+    input:
+        a='data/prc/sn_annotated.h5ad',
+        b='data/prc/cs_traj.csv',
+    output:
+        'results/figures/fig3/gmarkers.pdf'
+    shell:
+        """
+        python workflow/scripts/figures/fig3/gmarkers.py \
+        -a {input.a} -b {input.b} -c {output}
+        """
+
+rule fig3_clrviolins:
+    input:
+        a='data/prc/comps/dfs.csv',
+        b='data/prc/comps/wilcoxon_table.csv',
+    output:
+        'results/figures/fig3/clrviolins.pdf'
+    shell:
+        """
+        python workflow/scripts/figures/fig3/clrviolins.py \
+        -a {input.a} -b {input.b} -c {output}
+        """

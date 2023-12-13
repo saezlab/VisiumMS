@@ -109,7 +109,7 @@ rule vs_pathway_progeny:
         python workflow/scripts/func/vs_pathway.py -s {input.inp} -g {input.gmt} -n 'progeny' -o {output}
         """
 
-rule compositions:
+rule coda_compositions:
     input:
         meta='config/meta.csv',
         ann='data/prc/sn_annotated.h5ad',
@@ -125,6 +125,33 @@ rule compositions:
     shell:
         """
         python workflow/scripts/func/compositions.py -m {input.meta} -a {input.ann} -s {input.cs} -p {output.plot} -t {output.table}
+        """
+
+rule clr_comps:
+    input:
+        ann='data/prc/sn_annotated.h5ad',
+        meta='config/meta.csv',
+        cs=expand("data/prc/ctypes/{ctype}_ann.csv", ctype=ctypes)
+    output:
+        k='data/prc/comps/krustal_table.csv',
+        w='data/prc/comps/wilcoxon_table.csv',
+    shell:
+        """
+        python workflow/scripts/func/clr_comps.py -m {input.meta} -a {input.ann} -k {output.k} -w {output.w}
+        """
+
+rule cs_traj:
+    input:
+        ann='data/prc/sn_annotated.h5ad',
+        d='data/prc/sn_deg.csv',
+        k='data/prc/comps/krustal_table.csv',
+        w='data/prc/comps/wilcoxon_table.csv',
+        cs=expand("data/prc/ctypes/{ctype}_deg.csv", ctype=ctypes)
+    output:
+        'data/prc/cs_traj.csv'
+    shell:
+        """
+        python workflow/scripts/func/cs_traj.py -a {input.ann} -d {input.d} -k {input.k}  -w {input.w} -o {output}
         """
 
 rule sn_lr:

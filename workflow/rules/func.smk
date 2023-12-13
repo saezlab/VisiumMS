@@ -135,9 +135,12 @@ rule clr_comps:
     output:
         k='data/prc/comps/krustal_table.csv',
         w='data/prc/comps/wilcoxon_table.csv',
+        d='data/prc/comps/dfs.csv',
     shell:
         """
-        python workflow/scripts/func/clr_comps.py -m {input.meta} -a {input.ann} -k {output.k} -w {output.w}
+        python workflow/scripts/func/clr_comps.py \
+        -m {input.meta} -a {input.ann} \
+        -k {output.k} -w {output.w} -d {output.d}
         """
 
 rule cs_traj:

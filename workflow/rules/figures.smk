@@ -56,3 +56,16 @@ rule fig3_mds:
         python workflow/scripts/figures/fig3/mds.py \
         -b {input.b} -c {input.c} -d {input.d} -e {input.e} -f {output}
         """
+
+rule fig3_pwheatmaps:
+    input:
+        a='data/prc/sn_deg.csv',
+        b='data/prc/ns_deg.csv',
+        c='config/c2.cp.reactome.v2023.1.Hs.symbols.gmt',
+    output:
+        'results/figures/fig3/pwheatmaps.pdf'
+    shell:
+        """
+        python workflow/scripts/figures/fig3/pwheatmaps.py \
+        -a {input.a} -b {input.b} -c {input.c} -d {output}
+        """

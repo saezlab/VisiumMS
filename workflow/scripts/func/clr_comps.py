@@ -100,10 +100,8 @@ def read_niches(meta, group_col):
     return df
 
 def read_niches_prop(meta, groups_col='leiden'):
-    if groups_col == 'leiden':
-        msk = meta['Condition'] == 'MS'
-    else:
-        msk = ~meta['Batch vs'].isnull()
+    
+    msk = meta['Condition'] == 'MS'
     vs_samples = meta[(~meta['Batch vs'].isnull()) & msk]['Sample id'].values.astype('U')
     df = []
     for sample_id in vs_samples:
@@ -112,7 +110,7 @@ def read_niches_prop(meta, groups_col='leiden'):
         obs['Sample id'] = sample_id
         msk = ~ np.isin(obs['leiden'].values.astype('U'), ['Ependym', 'GM'])
         tmp = pd.read_csv('data/prc/vs/{sample_id}/abunds.csv'.format(sample_id=sample_id), index_col=0)
-        tmp = tmp.drop(columns=['NEU', 'BC', 'SC'])
+        tmp = tmp.drop(columns=['NEU'])
         tmp, obs = tmp.loc[msk, :].copy(), obs.loc[msk].copy()
         # Transform to anndata
         tmp = ad.AnnData(tmp.astype(float), obs=obs)

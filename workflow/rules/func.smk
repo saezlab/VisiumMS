@@ -39,6 +39,19 @@ rule ns_deg:
         python workflow/scripts/func/ns_deg.py -m {input.m} -o {output}
         """
 
+rule summary_deg:
+    input:
+        sn='data/prc/sn_deg.csv',
+        ns='data/prc/ns_deg.csv',
+    output:
+        'results/deg/summary.pdf'
+    params:
+        cdict=config['colors_conds'],
+    shell:
+        """
+        python workflow/scripts/func/summary_deg.py -a {input.sn} -b {input.ns} -c '{params.cdict}' -d {output}
+        """
+
 rule sn_pathway:
     input:
         inp='data/prc/sn_deg.csv',

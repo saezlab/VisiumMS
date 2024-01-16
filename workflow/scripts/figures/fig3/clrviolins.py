@@ -38,7 +38,7 @@ palette = {
 
 # Make unique
 pairs = (
-    wt[wt['padj'] < 0.05]
+    wt[wt['padj'] < 0.10]
     .sort_values('type', ascending=False)
     .drop_duplicates(['ctype', 'type'])
     [['ctype', 'type']]

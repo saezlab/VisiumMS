@@ -13,6 +13,7 @@ import argparse
 
 # Init args
 parser = argparse.ArgumentParser()
+parser.add_argument('-a','--colors_dict', required=True)
 parser.add_argument('-b','--data_path', required=True)
 parser.add_argument('-c','--meta_path', required=True)
 parser.add_argument('-d','--sn_mofa_path', required=True)
@@ -20,11 +21,15 @@ parser.add_argument('-e','--vs_mofa_path', required=True)
 parser.add_argument('-f','--plot_path', required=True)
 args = vars(parser.parse_args())
 
+colors_dict = args['colors_dict']
 data_path = args['data_path']
 meta_path = args['meta_path']
 sn_mofa_path = args['sn_mofa_path']
 vs_mofa_path = args['vs_mofa_path']
 plot_path = args['plot_path']
+
+# Get palette
+palette = dict(item.split(':') for item in colors_dict.strip("'").split(';'))
 
 # Read
 adata = sc.read_h5ad(data_path)
@@ -103,9 +108,9 @@ def get_coords(cors, meta):
     return coords
 
 
-def plot_mds(coords, title, figsize=(4, 4)):
+def plot_mds(coords, title, figsize=(4, 4), palette=None):
     fig, ax = plt.subplots(1, 1, figsize=figsize, dpi=150)
-    sns.scatterplot(data=coords, x="MDS1", y="MDS2", hue="Lesion type", ax=ax)
+    sns.scatterplot(data=coords, x="MDS1", y="MDS2", hue="Lesion type", ax=ax, palette=palette)
     texts = []
     for x, y, t in zip(coords['MDS1'], coords['MDS2'], coords['Sample id']):
             texts.append(ax.text(x, y, t))
@@ -142,15 +147,22 @@ sn_mofa_coo = get_coords(sn_mofa_ds, meta)
 vs_mofa_coo = get_coords(vs_mofa_ds, meta)
 total_coo = get_coords(total_ds, meta)
 
-fg1 = plot_mds(sn_prop_coo, title='sn_prop')
-fg2 = plot_mds(cs_prop_coo, title='cs_prop')
-fg3 = plot_mds(vs_prop_coo, title='vs_prop')
-fg4 = plot_mds(sn_mofa_coo, title='sn_mofa')
-fg5 = plot_mds(vs_mofa_coo, title='vs_mofa')
-fg6 = plot_mds(total_coo, title='total')
+# Supps
+fg1 = plot_mds(sn_prop_coo, title='sn_prop', palette=palette)
+fg2 = plot_mds(cs_prop_coo, title='cs_prop', palette=palette)
+fg3 = plot_mds(vs_prop_coo, title='vs_prop', palette=palette)
+fg4 = plot_mds(sn_mofa_coo, title='sn_mofa', palette=palette)
+fg5 = plot_mds(vs_mofa_coo, title='vs_mofa', palette=palette)
+fg6 = plot_mds(total_coo, title='total', palette=palette)
+
+# Main figure
+fg0, ax = plt.subplots(1, 1, figsize=(4., 2.5), facecolor='white', dpi=150, tight_layout=True)
+sns.scatterplot(data=total_coo, x="MDS1", y="MDS2", hue="Lesion type", style="Sex", ax=ax, palette=palette)
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles, labels, bbox_to_anchor=(1,0.5), loc='center left', frameon=False)
 
 # Save to pdf
 pdf = matplotlib.backends.backend_pdf.PdfPages(plot_path)
-for fig in [fg1, fg2, fg3, fg4, fg5, fg6]:
+for fig in [fg0, fg1, fg2, fg3, fg4, fg5, fg6]:
     pdf.savefig(fig, bbox_inches='tight')
 pdf.close()

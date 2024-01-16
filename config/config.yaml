@@ -16,6 +16,7 @@ qc:
     ct_thr: 0.99
     db_thr: 0.1
 
+colors_conds: 'Ctrl:#54CC5C;CA:#7DCDDF;CI:#E76ACA'
 colors_areas: 'WM_tab:blue;GM_tab:orange;PPWM_tab:green;LR_tab:red;LC_tab:purple;Ependym_tab:brown;VI_tab:pink;Claustrum_tab:gray'
 
 sn_integrate:

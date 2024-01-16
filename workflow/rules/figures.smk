@@ -51,10 +51,12 @@ rule fig3_mds:
         e='data/prc/mofacell/vs_factors.csv',
     output:
         'results/figures/fig3/mds.pdf'
+    params:
+        cdict=config['colors_conds']
     shell:
         """
         python workflow/scripts/figures/fig3/mds.py \
-        -b {input.b} -c {input.c} -d {input.d} -e {input.e} -f {output}
+        -a '{params.cdict}' -b {input.b} -c {input.c} -d {input.d} -e {input.e} -f {output}
         """
 
 rule fig3_pwheatmaps:

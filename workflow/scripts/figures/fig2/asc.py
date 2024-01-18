@@ -152,9 +152,12 @@ def plot_where_asc(sample_id, markers):
 fig3 = plot_where_asc('MS377T', df)
 fig4 = plot_where_asc('MS411', df)
 
-# Enrichment
+# Read REACTOME
 gmt = dc.read_gmt(reactome_path)
 gmt['source'] = [s.split('REACTOME')[1].replace('_', ' ').lstrip() for s in gmt['source']]
+msk = ~gmt['source'].str.contains('FETAL|INFECTION|SARS', case=False)
+gmt = gmt[msk]
+gmt = gmt.drop_duplicates(['source', 'target'])
 
 er = dc.get_ora_df(
     df=df.set_index('names'),

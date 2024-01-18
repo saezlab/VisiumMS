@@ -67,13 +67,12 @@ rule vs_traj:
     input:
         m='config/meta.csv',
         n=expand("data/prc/vs/{vs_sample}/niches.csv", vs_sample=vs_samples),
-        r='data/prc/sn_pathway.csv'
     output:
         o='data/prc/vs_traj.csv',
         p='results/traj/vs_traj.pdf'
     shell:
         """
-        python workflow/scripts/func/vs_traj.py -m {input.m} -r {input.r} -o {output.o} -p {output.p}
+        python workflow/scripts/func/vs_traj.py -m {input.m} -o {output.o} -p {output.p}
         """
 
 rule sn_traj:

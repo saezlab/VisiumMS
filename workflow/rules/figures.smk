@@ -72,6 +72,18 @@ rule fig3_pwheatmaps:
         -a {input.a} -b {input.b} -c {input.c} -d {output}
         """
 
+rule fig3_venn:
+    input:
+        sn='data/prc/sn_deg.csv',
+    output:
+        'results/figures/fig3/venn.pdf'
+    params:
+        cdict=config['colors_conds'],
+    shell:
+        """
+        python workflow/scripts/figures/fig3/venn.py -a {input.sn} -b '{params.cdict}' -c {output}
+        """
+
 rule fig3_gmarkers:
     input:
         a='data/prc/sn_annotated.h5ad',

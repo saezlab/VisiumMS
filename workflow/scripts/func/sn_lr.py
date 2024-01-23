@@ -94,7 +94,7 @@ for contrast in contrasts:
         # Extract results and format
         df = sub_adata.uns['liana_res'].copy()
         df['interaction_padj'] = dc.p_adjust_fdr(df['magnitude_rank'])
-        df = df[((df['source'].str.contains('BC|TC')) | (df['target'].str.contains('BC|TC'))) & (df['interaction_padj'] < thr_adjpval)]
+        df = df[((df['source'].str.contains('BC|TC|SC')) | (df['target'].str.contains('BC|TC|SC'))) & (df['interaction_padj'] < thr_adjpval)]
         df['contrast'] = contrast
         df['interaction'] = [x + '^' + y for x, y in zip(df['ligand_complex'], df['receptor_complex'])]
         df['ligand_stat'] = df['expr_prod']
@@ -106,6 +106,8 @@ for contrast in contrasts:
         df = df[['contrast', 'source', 'target', 'ligand_complex', 'receptor_complex', 'interaction', 'ligand_stat',
                  'ligand_padj', 'receptor_stat', 'receptor_padj', 'interaction_stat', 'interaction_padj', 'sign']]
         c_lr = pd.concat([c_lr, df])
+        # Remove duplicates
+        c_lr = c_lr.drop_duplicates(['contrast', 'source', 'target', 'interaction'])
 
     # Plot
     fig = li.pl.tileplot(

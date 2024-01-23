@@ -222,10 +222,11 @@ rule corr_ctlr_pw:
 rule cs_ctlr:
     input:
         g='config/markers.csv',
-        t='results/composition/table.csv',
+        t='data/prc/comps/wilcoxon_table.csv',
         s='data/prc/sn_lr.csv',
         c='data/prc/vs_diff_ctlr.csv',
-        m='config/meta.csv'
+        m='config/meta.csv',
+        states=expand('data/prc/ctypes/{ctype}_deg.csv', ctype=ctypes),
     output:
         o='data/prc/cs_ctlr.csv',
         p='results/ccc/cs_ctlr.pdf'

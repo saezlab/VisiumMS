@@ -22,9 +22,6 @@ out_path = args['out_path']
 # Read func results for sn
 sn_lr = pd.read_csv(sn_lr_path)
 
-# Subset by significant lr and pathways
-sn_lr = sn_lr[sn_lr['interaction_padj'] < thr_adjpval]
-
 # Finds signs
 sn_lr['names'] = ['{0}^{1}|{2}^{3}'.format(s, t, l.split('_')[0], r.split('_')[0]) for i, s,t,l,r in \
                   sn_lr[['source', 'target', 'ligand_complex', 'receptor_complex']].itertuples()]

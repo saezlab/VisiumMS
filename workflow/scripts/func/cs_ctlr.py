@@ -32,31 +32,35 @@ meta_path = args['meta_path']
 out_path = args['out_path']
 plot_path = args['plot_path']
 
-# Read
+# Read markers
 ctypes = pd.read_csv(markers_path)['cell_type'].unique().astype('U')
 deg = []
 for ctype in ctypes:
     tmp = pd.read_csv('data/prc/ctypes/{0}_deg.csv'.format(ctype))
-    deg.append(tmp)
+    if tmp.shape[0] > 0:
+        deg.append(tmp)
 deg = pd.concat(deg).set_index(['group'])
-tc_bc_sc = deg.index[deg.index.str.startswith('BC') | deg.index.str.startswith('TC')].unique().values.astype(str)
-df = pd.read_csv(table_path)
-df = df[df['pvals_adj'] < 0.05]
-df['lesion_type'] = [g if np.sign(m) > 0 else r for g, r, m in zip(df['group'], df['reference'], df['meanchange'])]
-df = df[['lesion_type', 'names']].drop_duplicates().sort_values(['lesion_type', 'names'])
-df['ctype'] = [x.split('_')[0] for x in df['names']]
+tc_bc_sc = deg.index[deg.index.str.startswith('BC') | deg.index.str.startswith('TC') | deg.index.str.startswith('SC')].unique().values.astype(str)
 
-# Add TC and BC cell states to CA and CI since no presence in Ctrl
+# Read composition changes of cell states
+df = pd.read_csv(table_path)
+df = df.rename(columns={'ctype': 'cell_state'})
+df = df[(df['padj'] < 0.10) & (df['type'] == 'cs')]
+df['lesion_type'] = [g if np.sign(s) > 0 else r for g, r, s in zip(df['group'], df['ref'], df['stat'])]
+df = df[['lesion_type', 'cell_state']].drop_duplicates().sort_values(['lesion_type', 'cell_state'])
+df['ctype'] = [x.split('_')[0] for x in df['cell_state']]
+
+# Add TC, BC and SC cell states to CA and CI since no presence in Ctrl
 rows = []
 for cs in tc_bc_sc:
     ct = cs.split('_')[0]
     rows.append(['CA', ct, cs])
     rows.append(['CI', ct, cs])
-rows = pd.DataFrame(rows, columns=['lesion_type', 'ctype', 'names'])
-df = pd.concat([df, rows]).sort_values(['lesion_type', 'ctype', 'names']).drop_duplicates(['lesion_type', 'names'])
+rows = pd.DataFrame(rows, columns=['lesion_type', 'ctype', 'cell_state'])
+df = pd.concat([df, rows]).sort_values(['lesion_type', 'ctype', 'cell_state']).drop_duplicates(['lesion_type', 'cell_state'])
 
 # Remove cell states with no markers
-df = df[np.isin(df['names'], deg.index.unique())]
+df = df[np.isin(df['cell_state'], deg.index.unique())]
 df = df.set_index(['lesion_type', 'ctype'])
 
 sn_cc = pd.read_csv(snlr_path)
@@ -77,7 +81,7 @@ for lesion_type, ligand, receptor, source, target in tqdm(iter):
     s_msk = False
     source_list = []
     if source in source_cs.index:
-        source_cs = source_cs.loc[[source]]['names'].values.astype(str)
+        source_cs = source_cs.loc[[source]]['cell_state'].values.astype(str)
         if np.any(np.isin(source_cs, deg.index)):
             s_msk = deg.loc[source_cs].reset_index().groupby('group')['names'].apply(lambda x: np.any(x.str.contains(ligand)))
             source_list = source_cs[s_msk]
@@ -87,7 +91,7 @@ for lesion_type, ligand, receptor, source, target in tqdm(iter):
     t_msk = False
     target_list = []
     if target in target_cs.index:
-        target_cs = target_cs.loc[[target]]['names'].values.astype(str)
+        target_cs = target_cs.loc[[target]]['cell_state'].values.astype(str)
         if np.any(np.isin(target_cs, deg.index)):
             t_msk = deg.loc[target_cs].reset_index().groupby('group')['names'].apply(lambda x: np.any(x.str.contains(receptor)))
             target_list = target_cs[t_msk]

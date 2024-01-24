@@ -38,3 +38,15 @@ rule comp_absinta2021:
         """
         python workflow/scripts/atlases/comp_absinta2021.py -c {input.lerma} -a {input.absinta} -p {output}
         """
+
+rule astros_absinta2021:
+    input:
+        absinta='data/prc/absinta2021.h5ad',
+        lerma='data/prc/ctypes/AS_deg.csv',
+    output:
+        'results/qc/astros_absinta.pdf'
+    shell:
+        """
+        python workflow/scripts/atlases/astros_absinta2021.py -a {input.absinta} -b {input.lerma} -c {output}
+        """
+

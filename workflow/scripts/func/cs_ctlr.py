@@ -85,7 +85,7 @@ for lesion_type, ligand, receptor, source, target in tqdm(iter):
         if np.any(np.isin(source_cs, deg.index)):
             s_msk = deg.loc[source_cs].reset_index().groupby('group')['names'].apply(lambda x: np.any(x.str.contains(ligand)))
             source_list = source_cs[s_msk]
-    col_source_cs.append(source_list)
+    col_source_cs.append(';'.join(source_list))
     
     target_cs = df.loc[lesion_type]
     t_msk = False
@@ -95,7 +95,7 @@ for lesion_type, ligand, receptor, source, target in tqdm(iter):
         if np.any(np.isin(target_cs, deg.index)):
             t_msk = deg.loc[target_cs].reset_index().groupby('group')['names'].apply(lambda x: np.any(x.str.contains(receptor)))
             target_list = target_cs[t_msk]
-    col_target_cs.append(target_list)
+    col_target_cs.append(';'.join(target_list))
 
     hascs = False
     if np.any(s_msk) or np.any(t_msk):

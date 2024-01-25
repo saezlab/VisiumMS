@@ -107,3 +107,33 @@ rule fig3_clrviolins:
         python workflow/scripts/figures/fig3/clrviolins.py \
         -a {input.a} -b {input.b} -c {output}
         """
+
+rule fig4_summary:
+    input:
+        a='data/prc/cs_ctlr.csv',
+    output:
+        'results/figures/fig4/summary.pdf'
+    params:
+        cdict=config['colors_conds'],
+    shell:
+        """
+        python workflow/scripts/figures/fig4/summary.py -a {input} -b '{params.cdict}' -c {output}
+        """
+
+rule fig4_examples:
+    input:
+        a='data/prc/cs_ctlr.csv',
+        b='data/prc/sn_annotated.h5ad',
+        c='config/meta.csv',
+    output:
+        'results/figures/fig4/examples.pdf'
+    params:
+        cdict=config['colors_conds'],
+    shell:
+        """
+        python workflow/scripts/figures/fig4/examples.py -a {input.a} -b {input.b} -c {input.c} -d '{params.cdict}' -e {output}
+        """
+
+
+
+

@@ -88,3 +88,15 @@ rule qc_niches_mofa:
         """
         python workflow/scripts/qc/niches_mofa.py -m {input.meta} -d '{params.colors_dict}' -p {output}
         """
+
+rule qc_niches_overlap:
+    input:
+        meta='config/meta.csv'
+    params:
+        colors_dict=config['colors_areas']
+    output:
+        'results/qc/niches_overlap.pdf'
+    shell:
+        """
+        python workflow/scripts/qc/niches_overlap.py -a {input.meta} -b '{params.colors_dict}' -c {output}
+        """

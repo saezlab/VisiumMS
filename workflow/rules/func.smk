@@ -219,6 +219,17 @@ rule corr_ctlr_pw:
         python workflow/scripts/func/corr_ctlr_pw.py -c {input.c} -p {input.p} -m {input.m} -t 0.10 -a 0.15 -o {output}
         """
 
+rule corr_pw_scores:
+    input:
+        a='data/prc/cs_ctlr.csv',
+        b='config/meta.csv'
+    output:
+        'data/prc/corr_pw_scores.csv'
+    shell:
+        """
+        python workflow/scripts/func/corr_pw_scores.py -a {input.a} -b {input.b} -c {output}
+        """
+
 rule cs_ctlr:
     input:
         g='config/markers.csv',

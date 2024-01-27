@@ -124,14 +124,15 @@ rule fig4_examples:
     input:
         a='data/prc/cs_ctlr.csv',
         b='data/prc/sn_annotated.h5ad',
-        c='config/meta.csv',
+        c='data/prc/corr_pw_scores.csv',
+        d='config/meta.csv',
     output:
         'results/figures/fig4/examples.pdf'
     params:
         cdict=config['colors_conds'],
     shell:
         """
-        python workflow/scripts/figures/fig4/examples.py -a {input.a} -b {input.b} -c {input.c} -d '{params.cdict}' -e {output}
+        python workflow/scripts/figures/fig4/examples.py -a {input.a} -b {input.b} -c {input.c} -d {input.d} -e '{params.cdict}' -f {output}
         """
 
 

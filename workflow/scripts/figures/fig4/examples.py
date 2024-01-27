@@ -17,13 +17,15 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-a','--ctlr_path', required=True)
 parser.add_argument('-b','--sn_annot_path', required=True)
-parser.add_argument('-c','--meta_path', required=True)
-parser.add_argument('-d','--colors_dict', required=True)
-parser.add_argument('-e','--plot_path', required=True)
+parser.add_argument('-c','--corr_path', required=True)
+parser.add_argument('-d','--meta_path', required=True)
+parser.add_argument('-e','--colors_dict', required=True)
+parser.add_argument('-f','--plot_path', required=True)
 args = vars(parser.parse_args())
 
 ctlr_path = args['ctlr_path']
 sn_annot_path = args['sn_annot_path']
+corr_path = args['corr_path']
 meta_path = args['meta_path']
 colors_dict = args['colors_dict']
 plot_path = args['plot_path']
@@ -33,6 +35,9 @@ palette = dict(item.split(':') for item in colors_dict.strip("'").split(';'))
 
 # Read LR results
 res = pd.read_csv(ctlr_path)
+
+# Read pathway corr results
+corr = pd.read_csv(corr_path)
 
 # Read meta
 meta = pd.read_csv(meta_path)
@@ -183,7 +188,22 @@ def plot_interaction(adata, scores, inter, sample_id, group):
 
     return [fg1, fg2, fg3, fg4]
 
+def plot_corr(corr, inter):
+    ltype = 'CA'
+    fg, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=150)
+    data = pd.merge(corr[corr['inter'] == inter], meta[['Sample id', 'Lesion type']].rename(columns={'Sample id': 'sample_id'}))
+    data = data[data['Lesion type'] == ltype]
+    names = data.groupby(['pathway'])['corr'].median().sort_values(ascending=False).reset_index().head(10)['pathway'].values
+    data = data[data['pathway'].isin(names)]
+    sns.boxplot(data=data, y='pathway', x='corr', color=palette[ltype], fliersize=5, order=names, ax=ax)
+    ax.set_ylabel('')
+    ax.set_xlabel('Pearson correlation')
+    ax.set_xlim(0, 1)
+    ax.set_title(inter)
+    return fg
+
 inters = ['AS^MG^HMGB1^CD163', 'AS^MG^HMGB1^TLR2', 'MG^EC^CD14^ITGB1', 'MG^AS^CD14^ITGB1']
+meta = meta.reset_index()
 inters_figs = []
 for inter in inters:
     inters_figs.extend(plot_interaction(
@@ -193,6 +213,7 @@ for inter in inters:
         sample_id='MS377T',
         group='Lesion type'
     ))
+    inters_figs.append(plot_corr(corr, inter))
 
 # Save to pdf
 pdf = matplotlib.backends.backend_pdf.PdfPages(plot_path)

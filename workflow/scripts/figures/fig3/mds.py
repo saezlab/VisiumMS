@@ -7,6 +7,7 @@ import matplotlib.backends.backend_pdf
 import seaborn as sns
 from composition_stats import closure
 from sklearn.manifold import MDS
+from sklearn.metrics import silhouette_score, silhouette_samples
 import adjustText as at
 import anndata as ad
 import argparse
@@ -139,6 +140,22 @@ total_ds = (
 msk = np.isnan(total_ds).sum() == 0
 total_ds = total_ds.loc[msk, msk]
 
+# Compute Sil. score
+def get_sil_scores(df, name, meta):
+    labels = meta.set_index('Sample id').loc[df.index, 'Lesion type'].values.astype('U')
+    scores = silhouette_samples(df, labels, metric='precomputed')
+    scores = pd.DataFrame(scores.reshape(-1, 1), columns=['score'])
+    scores['name'] = name
+    return scores
+
+sn_prop_sil = get_sil_scores(sn_prop_ds, 'sn_prop', meta)
+cs_prop_sil = get_sil_scores(cs_prop_ds, 'cs_prop', meta)
+vs_prop_sil = get_sil_scores(vs_prop_ds, 'vs_prop', meta)
+sn_mofa_sil = get_sil_scores(sn_mofa_ds, 'sn_mofa', meta)
+vs_mofa_sil = get_sil_scores(vs_mofa_ds, 'vs_mofa', meta)
+total_sil = get_sil_scores(total_ds, 'total', meta)
+sil_df = pd.concat([sn_prop_sil, cs_prop_sil, vs_prop_sil, sn_mofa_sil, vs_mofa_sil, total_sil])
+
 # Get MDS coords
 sn_prop_coo = get_coords(sn_prop_ds, meta)
 cs_prop_coo = get_coords(cs_prop_ds, meta)
@@ -161,8 +178,15 @@ sns.scatterplot(data=total_coo, x="MDS1", y="MDS2", hue="Lesion type", style="Se
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles, labels, bbox_to_anchor=(1,0.5), loc='center left', frameon=False)
 
+# Distirbution of sil scores
+fg7, ax = plt.subplots(1, 1, figsize=(3, 3), facecolor='white', dpi=150, tight_layout=True)
+sns.boxplot(data=sil_df, x='name', y='score', fliersize=5, ax=ax)
+ax.set_xlabel('')
+ax.set_ylabel('Silhouette Coeff')
+ax.tick_params(axis='x', labelrotation=90)
+
 # Save to pdf
 pdf = matplotlib.backends.backend_pdf.PdfPages(plot_path)
-for fig in [fg0, fg1, fg2, fg3, fg4, fg5, fg6]:
+for fig in [fg0, fg1, fg2, fg3, fg4, fg5, fg6, fg7]:
     pdf.savefig(fig, bbox_inches='tight')
 pdf.close()

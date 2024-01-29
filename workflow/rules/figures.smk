@@ -42,6 +42,19 @@ rule fig2_asc:
         -p {output}
         """
 
+rule fig2_ependym:
+    input:
+        a='data/prc/vs/MS549H/adata.h5ad',
+        b='data/prc/vs/MS549T/adata.h5ad',
+        c='data/prc/vs/MS549H/niches.csv',
+        d='data/prc/vs/MS549T/niches.csv',
+    output:
+        'results/figures/fig2/ependym.pdf'
+    shell:
+        """
+        python workflow/scripts/figures/fig2/ependym.py -a {input.a} -b {input.b} -c {input.c} -d {input.d} -e {output}
+        """
+
 rule fig3_mds:
     input:
         a=expand("data/prc/vs/{vs_sample}/niches.csv", vs_sample=vs_samples),

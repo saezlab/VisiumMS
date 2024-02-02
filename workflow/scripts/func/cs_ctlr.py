@@ -176,7 +176,7 @@ fig2, ax = plt.subplots(1, 1, figsize=(4, 2), tight_layout=True, dpi=150)
 (
     bar
     .pivot(index='value', columns='lesion_type', values='variable')
-    .plot(kind='bar', ax=ax, width=0.9, stacked=True, palette=palette)
+    .plot(kind='bar', ax=ax, width=0.9, stacked=True, color=palette)
 )
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
 ax.set_xlabel('')
@@ -200,7 +200,7 @@ fig3, ax = plt.subplots(1, 1, figsize=(4, 4), tight_layout=True, dpi=150)
     bar
     .pivot(index='value', columns='lesion_type', values='variable')
     .loc[order[-20:]]
-    .plot(kind='barh', ax=ax, width=0.9, stacked=True, palette)
+    .plot(kind='barh', ax=ax, width=0.9, stacked=True, color=palette)
 )
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
 ax.set_xlabel('')
@@ -331,7 +331,7 @@ ax.set_facecolor('xkcd:gray')
 ax = axes[2]
 (
     bar_lt
-    .plot(kind='barh', ax=ax, width=0.9, stacked=True, align='center', palette=palette)
+    .plot(kind='barh', ax=ax, width=0.9, stacked=True, align='center', color=palette)
 )
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
 ax.set_xlabel('# cell type pairs')

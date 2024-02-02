@@ -241,6 +241,8 @@ rule cs_ctlr:
     output:
         o='data/prc/cs_ctlr.csv',
         p='results/ccc/cs_ctlr.pdf'
+    params:
+        cdict=config['colors_conds'],
     shell:
         """
         python workflow/scripts/func/cs_ctlr.py \
@@ -250,6 +252,7 @@ rule cs_ctlr:
         -c {input.c} \
         -m {input.m} \
         -o {output.o} \
+        -q '{params.cdict}' \
         -p {output.p}
         """
 

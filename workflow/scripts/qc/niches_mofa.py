@@ -125,26 +125,23 @@ pbulk = dc.get_pseudobulk(
     adata=adata,
     sample_col='Sample id',
     groups_col='niches',
-    layer='counts'
+    layer='counts',
+    mode='sum',
+    min_cells=10,
+    min_counts=1000,
 )
 
-by_expr = dc.filter_by_expr(
-    adata=pbulk,
-    group=None,
-)
-by_prop = dc.filter_by_prop(
-    pbulk,
-    min_prop=0.2,
-    min_smpls=2,
-)
+genes = dc.filter_by_expr(pbulk, group=None, min_count=10, min_total_count=15)
+pbulk = pbulk[:, genes].copy()
 
-pbulk = pbulk[:, np.intersect1d(by_expr, by_prop)].copy()
-
-sc.pp.normalize_total(pbulk)
+sc.pp.normalize_total(pbulk, target_sum=1e4)
 sc.pp.log1p(pbulk)
 
+sc.pp.scale(pbulk)
+sc.tl.pca(pbulk, svd_solver='arpack')
+
 gex_df = (
-    pd.DataFrame(np.corrcoef(pbulk.X), index=pbulk.obs_names, columns=pbulk.obs_names)
+    pd.DataFrame(np.corrcoef(pbulk.obsm['X_pca']), index=pbulk.obs_names, columns=pbulk.obs_names)
     .reset_index()
     .melt(id_vars='index', value_vars=pbulk.obs_names)
     .rename(columns={'index': 'sample_a', 'variable': 'sample_b', 'value': 'corr'})
@@ -158,12 +155,13 @@ gex_df = gex_df[gex_df['id_a'] != gex_df['id_b']]
 gex_df = pd.merge(gex_df, pbulk.obs.reset_index(names='sample_a')[['sample_a', 'Lesion type']])
 
 props = dc.get_pseudobulk(
-    adata=dc.get_acts(adata, 'props'),
+    adata=dc.get_acts(adata, 'abunds'),
     sample_col='Sample id',
     groups_col='niches',
-    mode='mean',
+    mode='sum',
     min_cells=0,
-    min_counts=0
+    min_counts=0,
+    skip_checks=True
 )
 props.X = clr(closure(props.X))
 
@@ -189,14 +187,34 @@ sns.boxplot(data=gex_df, x='niche_a', y='corr', hue='is_same', ax=ax)
 ax.legend([],[], frameon=False)
 ax.set_title('Gene expression')
 ax.set_xlabel('')
-ax.set_ylabel('Pearson R2')
+ax.set_ylabel('Pearson')
+ax.tick_params(axis='x', labelrotation=90)
 
 ax = axes[1]
 ax.set_title('Cell type proportions')
 sns.boxplot(data=prp_df, x='niche_a', y='corr', hue='is_same', ax=ax)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False, title='is_same')
 ax.set_xlabel('')
-ax.set_ylabel('Pearson R2')
+ax.set_ylabel('Pearson')
+ax.tick_params(axis='x', labelrotation=90)
+
+def test_diffs(df, group):
+    from scipy.stats import ranksums
+    a = df[(df['niche_a'] == group) & (df['niche_b'] == group)]['corr']
+    b = df[(df['niche_a'] == group) & (df['niche_b'] != group)]['corr']
+    stat, pval = ranksums(a, b)
+    return stat, pval
+
+groups = gex_df['niche_a'].unique()
+test_df = []
+for group in groups:
+    stat, pval = test_diffs(gex_df, group)
+    test_df.append(['gex', group, stat, pval])
+    stat, pval = test_diffs(prp_df, group)
+    test_df.append(['prp', group, stat, pval])
+test_df = pd.DataFrame(test_df, columns=['type', 'group', 'stat', 'pval'])
+test_df['padj'] = dc.p_adjust_fdr(test_df['pval'])
+print(test_df)
 
 def plot_heatmap(obsm_key, title, ax, scale=False, flip=False, remove=False, cmap='Blues', figsize=(3, 9), cbar=True, square=False):
     # Compute sign

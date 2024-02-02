@@ -21,6 +21,7 @@ parser.add_argument('-s','--snlr_path', required=True)
 parser.add_argument('-c','--ctlr_path', required=True)
 parser.add_argument('-m','--meta_path', required=True)
 parser.add_argument('-o','--out_path', required=True)
+parser.add_argument('-q','--colors_dict', required=True)
 parser.add_argument('-p','--plot_path', required=True)
 args = vars(parser.parse_args())
 
@@ -30,7 +31,11 @@ snlr_path = args['snlr_path']
 ctlr_path = args['ctlr_path']
 meta_path = args['meta_path']
 out_path = args['out_path']
+colors_dict = args['colors_dict']
 plot_path = args['plot_path']
+
+# Get palette
+palette = dict(item.split(':') for item in colors_dict.strip("'").split(';'))
 
 # Read markers
 ctypes = pd.read_csv(markers_path)['cell_type'].unique().astype('U')
@@ -171,7 +176,7 @@ fig2, ax = plt.subplots(1, 1, figsize=(4, 2), tight_layout=True, dpi=150)
 (
     bar
     .pivot(index='value', columns='lesion_type', values='variable')
-    .plot(kind='bar', ax=ax, width=0.9, stacked=True)
+    .plot(kind='bar', ax=ax, width=0.9, stacked=True, palette=palette)
 )
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
 ax.set_xlabel('')
@@ -195,7 +200,7 @@ fig3, ax = plt.subplots(1, 1, figsize=(4, 4), tight_layout=True, dpi=150)
     bar
     .pivot(index='value', columns='lesion_type', values='variable')
     .loc[order[-20:]]
-    .plot(kind='barh', ax=ax, width=0.9, stacked=True)
+    .plot(kind='barh', ax=ax, width=0.9, stacked=True, palette)
 )
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
 ax.set_xlabel('')
@@ -298,7 +303,7 @@ ax = axes[0]
 sns.heatmap(
     source_tab,
     cmap='viridis',
-    annot=False,
+    annot=True,
     ax=ax,
     cbar=False,
     yticklabels=True,
@@ -312,7 +317,7 @@ ax = axes[1]
 sns.heatmap(
     target_tab,
     cmap='viridis',
-    annot=False,
+    annot=True,
     ax=ax,
     cbar=False,
     xticklabels=True,
@@ -326,7 +331,7 @@ ax.set_facecolor('xkcd:gray')
 ax = axes[2]
 (
     bar_lt
-    .plot(kind='barh', ax=ax, width=0.9, stacked=True, align='center')
+    .plot(kind='barh', ax=ax, width=0.9, stacked=True, align='center', palette=palette)
 )
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
 ax.set_xlabel('# cell type pairs')

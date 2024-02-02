@@ -101,3 +101,13 @@ rule qc_niches_overlap:
         """
         python workflow/scripts/qc/niches_overlap.py -a {input.meta} -b '{params.n_colors_dict}' -c '{params.l_colors_dict}' -d {output}
         """
+
+rule qc_niches_nn:
+    input:
+        meta='config/meta.csv'
+    output:
+        'results/qc/niches_nn.pdf'
+    shell:
+        """
+        python workflow/scripts/qc/niches_nn.py -a {input.meta} -c {output}
+        """

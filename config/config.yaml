@@ -18,6 +18,7 @@ qc:
 
 colors_conds: 'Ctrl:#54CC5C;CA:#7DCDDF;CI:#E76ACA'
 colors_areas: 'WM_tab:blue;GM_tab:orange;PPWM_tab:green;LR_tab:red;LC_tab:purple;Ependym_tab:brown;VI_tab:pink;Claustrum_tab:gray'
+colors_ctypes: 'AS:#1f77b4;BC:#ff7f0e;EC:#2ca02c;MG:#d62728;NEU:#9467bd;OL:#8c564b;OPC:#e377c2;SC:#7f7f7f;TC:#bcbd22'
 
 sn_integrate:
     n_hvg: 4096

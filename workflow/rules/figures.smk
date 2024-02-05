@@ -10,6 +10,19 @@ rule fig1_spatial_features:
         python workflow/scripts/figures/fig1/spatial_features.py -d '{params.colors_dict}' -p {output}
         """
 
+rule fig1_ncstates:
+    input:
+        x=expand("data/prc/ctypes/{ctype}_ann.csv", ctype=ctypes),
+        a='config/cellstates.csv'
+    output:
+        'results/figures/fig1/ncstates.pdf'
+    params:
+        colors_dict=config['colors_ctypes']
+    shell:
+        """
+        python workflow/scripts/figures/fig1/ncstates.py -a {input.a} -b '{params.colors_dict}' -c {output}
+        """
+
 rule fig1_niches_markers:
     input:
         m='config/meta.csv',

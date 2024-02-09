@@ -60,7 +60,6 @@ def plot_violin(adata, gene, ax, palette):
     sns.violinplot(data=df, x='group', y='value', hue='group', ax=ax, palette=palette)
     ax.set_ylabel(gene)
     ax.set_xlabel('')
-    ax.get_legend().remove()
 
 # Plot top marker genes
 fig1, axes = plt.subplots(2, 3, figsize=(5, 3), tight_layout=True, dpi=150)
@@ -216,9 +215,9 @@ def plot_where_func(sample_id, markers, net, name, is_tf=True):
 
 fig7 = plot_where_func('MS411', df, clt, name='FOXJ1')
 fig8 = plot_where_func('MS411', df, gmt, name='CILIUM ASSEMBLY')
-fig9 = plot_where_func('MS411', df, clt, name='FOXJ1', is_tf=False)
+fig9 = plot_where_func('MS411', df, clt, name='EZR', is_tf=False)
 fig10 = plot_where_func('MS411', df, clt, name='CETN2', is_tf=False)
-fig11 = plot_where_func('MS411', df, clt, name='SERPINA3', is_tf=False)
+fig11 = plot_where_func('MS411', df, clt, name='DNALI1', is_tf=False)
 
 # Plot net
 obs = dc.get_pseudobulk(
@@ -236,7 +235,7 @@ fig12 = dc.plot_network(
     net=clt,
     n_sources=['FOXJ1'],
     n_targets=50,
-    node_size=1.,
+    node_size=20.,
     figsize=(3, 4),
     c_pos_w='#9b2531',
     c_neg_w='#233c55',

@@ -17,6 +17,7 @@ parser.add_argument('-a','--ann_path', required=True)
 parser.add_argument('-m','--meta_path', required=True)
 parser.add_argument('-r','--reactome_path', required=True)
 parser.add_argument('-c','--collectri_path', required=True)
+parser.add_argument('-d','--deg_path', required=True)
 parser.add_argument('-p','--plot_path', required=True)
 args = vars(parser.parse_args())
 
@@ -25,6 +26,7 @@ ann_path = args['ann_path']
 meta_path = args['meta_path']
 reactome_path = args['reactome_path']
 collectri_path = args['collectri_path']
+deg_path = args['deg_path']
 plot_path = args['plot_path']
 
 # Read AS atlas and define AS_C vs the rest
@@ -40,6 +42,9 @@ adata = adata[~adata.obs['Sample id'].str.startswith('MS549')].copy()
 sc.tl.rank_genes_groups(adata, groupby='leiden', method='t-test_overestim_var')
 df = sc.get.rank_genes_groups_df(adata, group='11')
 df = df[(df['pvals_adj'] < 0.0001) & (df['logfoldchanges'] > 1)]
+
+# Write
+df.to_csv(deg_path, index=False)
 df['group'] = 'AS_C'
 
 def get_expr_df(adata, gene):

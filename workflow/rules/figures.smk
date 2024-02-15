@@ -42,7 +42,8 @@ rule fig2_asc:
         r='config/c2.cp.reactome.v2023.1.Hs.symbols.gmt',
         c='config/collectri.csv',
     output:
-        'results/figures/fig2/asc.pdf'
+        plot='results/figures/fig2/asc.pdf',
+        csv='results/figures/fig2/asc.csv',
     shell:
         """
         python workflow/scripts/figures/fig2/asc.py \
@@ -52,7 +53,8 @@ rule fig2_asc:
         -r '{input.r}' \
         -c '{input.c}' \
         -m '{input.m}' \
-        -p {output}
+        -d '{output.csv}' \
+        -p {output.plot}
         """
 
 rule fig2_ependym:

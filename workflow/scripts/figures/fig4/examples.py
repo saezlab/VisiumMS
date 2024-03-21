@@ -202,7 +202,7 @@ def plot_corr(corr, inter):
     ax.set_title(inter)
     return fg
 
-inters = ['AS^MG^HMGB1^CD163', 'AS^MG^HMGB1^TLR2', 'MG^EC^CD14^ITGB1', 'MG^AS^CD14^ITGB1']
+inters = ['AS^MG^HMGB1^CD163', 'AS^MG^HMGB1^TLR2', 'MG^EC^CD14^ITGB1', 'MG^AS^CD14^ITGB1', 'MG^MG^CD14^ITGB1']
 meta = meta.reset_index()
 inters_figs = []
 for inter in inters:

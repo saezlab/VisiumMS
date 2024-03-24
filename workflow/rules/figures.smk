@@ -57,6 +57,17 @@ rule fig2_asc:
         -p {output.plot}
         """
 
+rule fig2_ascquant:
+    input:
+        'config/asc_counts.csv',
+    output:
+        'results/figures/fig2/ascquant.pdf'
+    shell:
+        """
+        python workflow/scripts/figures/fig2/quant.py -i {input} -o {output}
+        """
+
+
 rule fig2_ependym:
     input:
         a='data/prc/vs/MS549H/adata.h5ad',

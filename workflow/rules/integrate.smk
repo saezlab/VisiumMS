@@ -100,3 +100,24 @@ rule cs_annotate:
         -a {output.ann} \
         -g {output.deg}
         """
+
+rule save_data:
+    input:
+        sn='data/prc/sn_annotated.h5ad',
+        cc=expand('data/prc/vs/{vs_sample}/ctlr_scores.csv', vs_sample=vs_samples),
+        pr=expand('data/prc/vs/{vs_sample}/progeny.csv', vs_sample=vs_samples),
+        hl=expand('data/prc/vs/{vs_sample}/hallmarks.csv', vs_sample=vs_samples),
+        rc=expand('data/prc/vs/{vs_sample}/reactome.csv', vs_sample=vs_samples),
+    output:
+        d=directory('data/final/'),
+        sn='data/final/sn_atlas.h5ad',
+        vs=expand('data/final/visium_{vs_sample}.h5ad', vs_sample=vs_samples),
+    shell:
+        """
+        python workflow/scripts/integrate/save_data.py \
+        -a {input.sn} \
+        -b {output.d}
+        """
+
+
+

@@ -18,37 +18,77 @@ output_path = args['output_path']
 
 df = pd.read_csv(input_path)
 
-# Plot and test
+# CA
+tmp = df[df['type'] == 'CA'].copy()
 fig1, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=150)
 sns.boxplot(
-    data=df,
+    data=tmp,
     x='group',
     y='asc_mm2',
-    ax=ax
+    ax=ax,
+    order=['Border', 'LC']
 )
+ax.set_title('CA')
 
 s, p = ranksums(
-    x=df.loc[df['group'] == 'LC', 'asc_mm2'],
-    y=df.loc[df['group'] == 'rest', 'asc_mm2']
+    x=tmp.loc[tmp['group'] == 'LC', 'asc_mm2'],
+    y=tmp.loc[tmp['group'] == 'Border', 'asc_mm2']
 )
 print('asc_mm2: ', p)
 
-# Plot and test
+
 fig2, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=150)
 sns.boxplot(
-    data=df,
+    data=tmp,
     x='group',
     y='asc_prop',
-    ax=ax
+    ax=ax,
+    order=['Border', 'LC']
 )
+ax.set_title('CA')
 s, p = ranksums(
-    x=df.loc[df['group'] == 'LC', 'asc_prop'],
-    y=df.loc[df['group'] == 'rest', 'asc_prop']
+    x=tmp.loc[tmp['group'] == 'LC', 'asc_prop'],
+    y=tmp.loc[tmp['group'] == 'Border', 'asc_prop']
+)
+print('asc_prop: ', p)
+
+# CI
+tmp = df[df['type'] == 'CI'].copy()
+fig3, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=150)
+sns.boxplot(
+    data=tmp,
+    x='group',
+    y='asc_mm2',
+    ax=ax,
+    order=['Border', 'LC']
+)
+ax.set_title('CI')
+
+
+s, p = ranksums(
+    x=tmp.loc[tmp['group'] == 'LC', 'asc_mm2'],
+    y=tmp.loc[tmp['group'] == 'Border', 'asc_mm2']
+)
+print('asc_mm2: ', p)
+
+
+fig4, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=150)
+sns.boxplot(
+    data=tmp,
+    x='group',
+    y='asc_prop',
+    ax=ax,
+    order=['Border', 'LC']
+)
+ax.set_title('CI')
+s, p = ranksums(
+    x=tmp.loc[tmp['group'] == 'LC', 'asc_prop'],
+    y=tmp.loc[tmp['group'] == 'Border', 'asc_prop']
 )
 print('asc_prop: ', p)
 
 # Save to pdf
 pdf = matplotlib.backends.backend_pdf.PdfPages(output_path)
-for fig in [fig1, fig2]:
+for fig in [fig1, fig2, fig3, fig4]:
     pdf.savefig(fig, bbox_inches='tight')
 pdf.close()

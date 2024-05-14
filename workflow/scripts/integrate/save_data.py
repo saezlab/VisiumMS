@@ -110,3 +110,44 @@ st_samples = meta[~meta['Batch vs'].isnull()]['Sample id'].values.astype('U')
 for sample_id in st_samples:
     slide = read_slide(sample_id)
     slide.write(os.path.join(out_path, 'visium_{0}.h5ad'.format(sample_id)))
+
+# Per cell state
+ctypes = pd.read_csv('config/markers.csv')['cell_type'].unique().astype('U')
+def clean_per_ctype(ctype):
+    adata = sc.read_h5ad('data/prc/ctypes/{ctype}.h5ad'.format(ctype=ctype))
+    # Modify obs
+    cols = [
+        'Patient id', 'Sample id', 'Condition', 'Lesion type', 'Age', 'Sex', 'RIN', 'PMI (hrs)',
+        'Duration (years)', 'MS class', 'Cause of death', 'Batch sn'
+    ]
+    obs = adata.obs.loc[:, cols].copy()
+    obs = obs.rename(columns={
+        'Patient id': 'patient_id',
+        'Sample id': 'sample_id',
+        'Condition': 'condition',
+        'Lesion type': 'lesion_type',
+        'Age': 'age',
+        'Sex': 'sex',
+        'RIN': 'rin',
+        'PMI (hrs)': 'pmi_hrs',
+        'Duration (years)': 'duration_y',
+        'MS class': 'ms_class',
+        'Cause of death': 'cause_death',
+        'Batch sn': 'batch_sn',
+    })
+    obs['subtype'] = pd.read_csv('data/prc/ctypes/{ctype}_ann.csv'.format(ctype=ctype), index_col=0)
+    
+    # Update obs and trim adata
+    adata.obs = obs
+    del adata.uns
+    del adata.obsp
+    
+    # Move counts to X
+    adata.X = adata.layers['counts'].copy()
+    del adata.layers['counts']
+    return adata
+
+# Write each visium sample
+for ctype in ctypes:
+    adata = clean_per_ctype(ctype)
+    adata.write(os.path.join(out_path, 'ctype_{0}.h5ad'.format(ctype)))

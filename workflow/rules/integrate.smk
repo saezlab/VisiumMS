@@ -108,10 +108,13 @@ rule save_data:
         pr=expand('data/prc/vs/{vs_sample}/progeny.csv', vs_sample=vs_samples),
         hl=expand('data/prc/vs/{vs_sample}/hallmarks.csv', vs_sample=vs_samples),
         rc=expand('data/prc/vs/{vs_sample}/reactome.csv', vs_sample=vs_samples),
+        co=expand('data/prc/ctypes/{ctype}.h5ad', ctype=ctypes),
+        ca=expand('data/prc/ctypes/{ctype}_ann.csv', ctype=ctypes),
     output:
         d=directory('data/final/'),
         sn='data/final/sn_atlas.h5ad',
         vs=expand('data/final/visium_{vs_sample}.h5ad', vs_sample=vs_samples),
+        ct=expand('data/final/ctype_{ctype}.h5ad', ctype=ctypes),
     shell:
         """
         python workflow/scripts/integrate/save_data.py \

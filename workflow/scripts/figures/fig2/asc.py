@@ -35,6 +35,18 @@ adata.obs['cell_states'] = pd.read_csv(ann_path, index_col=0)
 adata.obs['cs'] = ['AS_C' if cs == '11' else 'rest' for cs in adata.obs['leiden']]
 adata.obs['cs'] = pd.Categorical(adata.obs.loc[:, 'cs'], categories=['rest', 'AS_C'])
 
+# Plot number of ASC
+df = adata.obs.groupby(['Sample id', 'Patient id', 'Lesion type', 'cs']).count()[['total_counts']].reset_index()
+df = df[(df['total_counts'] > 0) & (df['cs'] == 'AS_C')].set_index('Sample id')
+cdict = {'Ctrl' :'#54CC5C', 'CA': '#7DCDDF', 'CI':'#E76ACA'}
+color = [cdict[l] for l in df['Lesion type']]
+fig_counts, ax = plt.subplots(1, 1, figsize=(3, 2), dpi=150)
+df['total_counts'].loc[np.flip(df.index)].plot.barh(ax=ax, color=color)
+ax.bar_label(ax.containers[0])
+ax.set_xlim(0, 210)
+ax.set_xlabel('Number of ASC')
+ax.grid(axis='x')
+
 # Remove samples with Ependym
 adata = adata[~adata.obs['Sample id'].str.startswith('MS549')].copy()
 
@@ -253,6 +265,6 @@ fig12 = dc.plot_network(
 
 # Save to pdf
 pdf = matplotlib.backends.backend_pdf.PdfPages(plot_path)
-for fig in [fig1, fig2, fig3, fig4, fig5, fig6, fig7, fig8, fig9, fig10, fig11, fig12]:
+for fig in [fig_counts, fig1, fig2, fig3, fig4, fig5, fig6, fig7, fig8, fig9, fig10, fig11, fig12]:
     pdf.savefig(fig, bbox_inches='tight')
 pdf.close()

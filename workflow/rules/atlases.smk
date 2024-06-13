@@ -42,11 +42,18 @@ rule comp_absinta2021:
 rule astros_absinta2021:
     input:
         absinta='data/prc/absinta2021.h5ad',
-        lerma='data/prc/ctypes/AS_deg.csv',
+        lerma='data/prc/ctypes/AS.h5ad',
+        annot='data/prc/ctypes/AS_ann.csv',
+        lerma_deg='data/prc/ctypes/AS_deg.csv',
     output:
         'results/qc/astros_absinta.pdf'
     shell:
         """
-        python workflow/scripts/atlases/astros_absinta2021.py -a {input.absinta} -b {input.lerma} -c {output}
+        python workflow/scripts/atlases/astros_absinta2021.py \
+        -a {input.absinta} \
+        -l {input.lerma}\
+        -n {input.annot} \
+        -b {input.lerma_deg} \
+        -c {output}
         """
 

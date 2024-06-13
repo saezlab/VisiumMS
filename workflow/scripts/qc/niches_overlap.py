@@ -57,6 +57,13 @@ for sample_id in vs_samples:
 res = pd.DataFrame(res, columns=['sample_id', 'cat', 'jacc'])
 ari_df = pd.DataFrame(ari_df, columns=['sample_id', 'ari'])
 
+s, p = scipy.stats.ttest_1samp(
+    a=ari_df['ari'].values,
+    popmean=0,
+    alternative='greater'
+)
+print('ARI:', p)
+
 # Plot
 fig1, ax = plt.subplots(1, 1, figsize=(2, 2), dpi=150)
 order = res.groupby('cat')['jacc'].median().sort_values(ascending=False).index

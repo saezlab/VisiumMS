@@ -3,6 +3,9 @@ Scripts to reproduce results from "Spatial cell type mapping of multiple scleros
 
 This pipeline uses `Snakemake` to ensure reproducibility
 
+## Data
+Processed data in `h5ad` format can be downloaded from the Human Cell Atlas [portal](https://explore.data.humancellatlas.org/projects/4c8e9d75-d85a-47de-9598-06549cf44b91), while raw data is available on [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE279183).
+
 ## Installation
 
 Clone repo:
@@ -33,4 +36,4 @@ snakemake --profile config/slurm/
 ```
 
 ## Reference
-Lerma-Martin, C., Badia-i-Mompel, P. et al. **Spatial cell type mapping of multiple sclerosis lesions**. bioRxiv 2022.11.03.514906 (2022) doi:10.1101/2022.11.03.514906.
+Lerma-Martin, C., Badia-i-Mompel, P., Ramirez Flores, R.O. et al. Cell type mapping reveals tissue niches and interactions in subcortical multiple sclerosis lesions. Nat Neurosci 27, 2354–2365 (2024). https://doi.org/10.1038/s41593-024-01796-z
